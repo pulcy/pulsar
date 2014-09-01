@@ -1,0 +1,15 @@
+Subliminl Development Environment
+=================================
+
+Requirements
+============
+
+* Node.js
+* Npm
+* Docker
+
+Environment setup
+=================
+
+* Create an extra in /etc/hosts: "127.0.0.1	arvika-ssh"
+

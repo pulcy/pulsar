@@ -1,0 +1,62 @@
+#!/bin/bash
+# Subliminl development tools root script
+
+export SUBLIMINL_ME=`readlink -f $0`
+export SUBLIMINL_DIR=`dirname $SUBLIMINL_ME`
+export SUBLIMINL_ROOT=${SUBLIMINL_ROOT:=~/.subliminl}
+
+[[ -f $SUBLIMINL_ROOT/.env ]] && source $SUBLIMINL_ROOT/.env
+
+registryhost=arvika.subliminl.com
+tunnelsocket=~/.ssh-tunnel-subliminl-registry
+
+# Open SSH tunnel
+function openTunnel {
+	ssh -L5000:localhost:5000 -f -N -M -S $tunnelsocket admin@$registryhost
+}
+
+# Close SSH tunnel
+function closeTunnel {
+	ssh -S $tunnelsocket -O exit admin@$registryhost
+}
+
+case "$1" in
+	images)
+	docker images
+	;;
+
+	install)
+	mkdir -p $HOME/bin
+    ln -sf $SUBLIMINL_ME $HOME/bin/subliminl
+    ;;
+
+	push)
+	openTunnel
+	docker tag $2 arvika-ssh:5000/$2
+	docker push arvika-ssh:5000/$2
+	docker rmi arvika-ssh:5000/$2
+	closeTunnel
+	;;
+
+	pull)
+	openTunnel
+	docker pull arvika-ssh:5000/$2
+	docker tag arvika-ssh:5000/$2 $2
+	docker rmi arvika-ssh:5000/$2
+	closeTunnel
+	;;
+
+	help)
+	cat <<EOF
+    help                               Print a list of commands
+    install                            Install a link to this script in ~/bin
+    push LOCAL-IMAGE-NAME              Push a docker image to the registry
+    pull LOCAL-IMAGE-NAME              Pull a docker images from the registry
+EOF
+	;;
+
+	*)
+	$0 help
+	;;
+esac
+
