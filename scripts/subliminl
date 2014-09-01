@@ -12,12 +12,16 @@ tunnelsocket=~/.ssh-tunnel-subliminl-registry
 
 # Open SSH tunnel
 function openTunnel {
-	ssh -L5000:localhost:5000 -f -N -M -S $tunnelsocket admin@$registryhost
+	if [ ! -e $tunnelsocket ]; then
+	    ssh -L5000:localhost:5000 -L16012:localhost:16012 -L16073:localhost:16073 -f -N -M -S $tunnelsocket admin@$registryhost
+	fi
 }
 
 # Close SSH tunnel
 function closeTunnel {
-	ssh -S $tunnelsocket -O exit admin@$registryhost
+	if [ -e $tunnelsocket ]; then
+		ssh -S $tunnelsocket -O exit admin@$registryhost
+	fi
 }
 
 case "$1" in
@@ -28,6 +32,7 @@ case "$1" in
 	install)
 	mkdir -p $HOME/bin
     ln -sf $SUBLIMINL_ME $HOME/bin/subliminl
+    npm set registry http://arvika-ssh:16012
     ;;
 
 	push)
@@ -35,7 +40,6 @@ case "$1" in
 	docker tag $2 arvika-ssh:5000/$2
 	docker push arvika-ssh:5000/$2
 	docker rmi arvika-ssh:5000/$2
-	closeTunnel
 	;;
 
 	pull)
@@ -43,6 +47,13 @@ case "$1" in
 	docker pull arvika-ssh:5000/$2
 	docker tag arvika-ssh:5000/$2 $2
 	docker rmi arvika-ssh:5000/$2
+	;;
+
+	tunnel)
+	openTunnel
+	;;
+
+	close-tunnel)
 	closeTunnel
 	;;
 
@@ -52,6 +63,8 @@ case "$1" in
     install                            Install a link to this script in ~/bin
     push LOCAL-IMAGE-NAME              Push a docker image to the registry
     pull LOCAL-IMAGE-NAME              Pull a docker images from the registry
+    close-tunnel                       Close any existing SSH tunnel to arvika.subliminl.com
+    tunnel                             Open aan SSH tunnel to arvika.subliminl.com (named arvika-ssh)
 EOF
 	;;
 

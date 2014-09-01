@@ -7,9 +7,31 @@ Requirements
 * Node.js
 * Npm
 * Docker
+* Git
 
 Environment setup
 =================
 
-* Create an extra in /etc/hosts: "127.0.0.1	arvika-ssh"
+Clone the Subliminl development environment tools:
+```
+git clone ssh://git@arvika.subliminl.com:26402/developers/development-environment.git
+```
 
+Install Subliminl development tools (inside development-environment repository): 
+
+```
+./scripts/subliminl install
+```
+
+Create an extra in /etc/hosts:
+```
+sudo echo "127.0.0.1	arvika-ssh" >> /etc/hosts
+```
+
+Commonly used URL's
+===================
+
+https://arvika.subliminl.com - GitLab
+http://arvika-ssh:5000       - Subliminl private docker registry
+http://arvika-ssh:16012      - Subliminl NPM proxy 
+http://arvika-ssh:16073      - Subliminl private NPM repository
