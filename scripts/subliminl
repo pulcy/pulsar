@@ -33,6 +33,7 @@ case "$1" in
 	mkdir -p $HOME/bin
     ln -sf $SUBLIMINL_ME $HOME/bin/subliminl
     npm set registry http://arvika-ssh:16012
+    echo "Run 'npm adduser --registry http://arvika-ssh:16073' if you need to publish NPM packages"
     ;;
 
 	push)
