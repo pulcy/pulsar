@@ -10,6 +10,10 @@ export SUBLIMINL_ROOT=${SUBLIMINL_ROOT:=~/.subliminl}
 registryhost=arvika.subliminl.com
 tunnelsocket=~/.ssh-tunnel-subliminl-registry
 
+ETCD_IMAGE=subliminl/etcd:0.4.6
+AMBASSADORD_IMAGE=progrium/ambassadord 
+REGISTRATOR_IMAGE=subliminl/registrator
+
 # Open SSH tunnel
 function openTunnel {
 	if [ ! -e $tunnelsocket ]; then
@@ -22,6 +26,17 @@ function closeTunnel {
 	if [ -e $tunnelsocket ]; then
 		ssh -S $tunnelsocket -O exit admin@$registryhost
 	fi
+}
+
+function setupDockerVariables {
+    NAME=$(hostname)
+    IP=$(dig +short $NAME)	
+}
+
+function stopContainer {
+	docker stop --time=3 $1 &> /dev/null
+	docker kill $1 &> /dev/null
+	docker rm $1 &> /dev/null
 }
 
 case "$1" in
@@ -58,6 +73,41 @@ case "$1" in
 	closeTunnel
 	;;
 
+	test-etcd)
+	stopContainer etcd
+    DATA_DIR=$SUBLIMINL_ROOT/etcd
+    mkdir -p $DATA_DIR
+    setupDockerVariables
+    DISCOVERY_FILE=$SUBLIMINL_ROOT/.etcd_discovery
+    if [ ! -f $DISCOVERY_FILE ]; then
+    	curl -L https://discovery.etcd.io/new > $DISCOVERY_FILE
+    fi
+    DISCOVERY=$(cat $DISCOVERY_FILE)
+    docker run -d -p 127.0.0.1:4001:4001 -p 7001:7001 -v $DATA_DIR:$DATA_DIR --name etcd \
+        $ETCD_IMAGE \
+        -name $NAME -addr $IP:4001 -peer-addr $IP:7001 -data-dir $DATA_DIR \
+        -discovery $DISCOVERY
+	;;
+
+	test-mongo)
+    setupDockerVariables
+	stopContainer mongo
+	docker run --name mongo -d -e PORT=27017 --expose 27017 -p 27017 $AMBASSADORD_IMAGE $IP:27017
+	;;
+
+	test-registrator)
+    setupDockerVariables
+	stopContainer registrator
+    REGION="test"
+    docker run --name registrator -d --link etcd:etcd -v /var/run/docker.sock:/var/run/docker.sock $REGISTRATOR_IMAGE -ip=$IP etcd://etcd:4001/services/$REGION/
+    ;;
+
+	test-up)
+	$0 test-etcd
+	$0 test-mongo
+	$0 test-registrator
+	;;
+
 	help)
 	cat <<EOF
     help                               Print a list of commands
@@ -66,6 +116,10 @@ case "$1" in
     pull LOCAL-IMAGE-NAME              Pull a docker images from the registry
     close-tunnel                       Close any existing SSH tunnel to arvika.subliminl.com
     tunnel                             Open aan SSH tunnel to arvika.subliminl.com (named arvika-ssh)
+    test-etcd                          Create a local test etcd container
+    test-mongo                         Create a local test mongo-ambassador container
+    test-registrator                   Create a local test registrator container
+    test-up                            Create a local test cluster of all basic containers (etcd, mongo, registrator)
 EOF
 	;;
 
