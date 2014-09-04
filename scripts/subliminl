@@ -81,10 +81,18 @@ case "$1" in
 	;;
 
 	install)
+	# Link in this script
 	mkdir -p $HOME/bin
     ln -sf $SUBLIMINL_ME $HOME/bin/subliminl
+    ln -sf $SUBLIMINL_ME.autocomplete $HOME/bin/subliminl.autocomplete
+    # Setup script auto completion
+    existing=$(grep -E "^source .*subliminl.autocomplete" ~/.bashrc)
+    if [ -z $existing ]; then
+    	echo "source $HOME/bin/subliminl.autocomplete" >> ~/.bashrc
+    fi
+    # Setup npm registry
     npm set registry http://arvika-ssh:16012
-    echo "Run 'npm adduser --registry http://arvika-ssh:16073' if you need to publish NPM packages"
+    echo "Run 'npm adduser --registry http://arvika-ssh:16073' if you need to publish NPM packages"    
     ;;
 
 	push)
@@ -171,6 +179,10 @@ case "$1" in
     test-registrator                   Create a local test registrator container
     test-up                            Create a local test cluster of all basic containers (etcd, mongo, registrator, load-balancer)
 EOF
+	;;
+
+	command-list)
+	echo "help install push pull close-tunnel tunnel test-etcd test-lb test-mongo test-registrator test-up"
 	;;
 
 	*)

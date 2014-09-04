@@ -1,0 +1,34 @@
+# Auto completion script for ./subliminl
+
+_subliminl_docker_q() {
+	docker 2>/dev/null "$@"
+}
+
+_subliminl_docker_images() {
+	local repos="$( _subliminl_docker_q images | awk 'NR>1{print $1}' | grep -v '^<none>$' | grep -v '/' )"
+	COMPREPLY=( $( compgen -W "$repos" -- "$cur" ) )
+}
+
+_subliminl()
+{
+  	_subliminl_commands=$(subliminl "command-list")
+	_get_comp_words_by_ref cur prev
+
+	case "$prev" in
+		"push"|"pull")
+		_subliminl_docker_images
+		return 0;
+		;;
+
+		*)
+	  	COMPREPLY=( $(compgen -W "${_subliminl_commands}" -- ${cur}) )
+	  	return 0
+		;;
+	esac
+
+  	#local cur prev
+  	#COMPREPLY=()
+  	#cur="${COMP_WORDS[COMP_CWORD]}"
+
+}
+complete -F _subliminl subliminl
