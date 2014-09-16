@@ -32,6 +32,7 @@ function closeTunnel {
 function setupDockerVariables {
     NAME=$(hostname)
     IP=$(dig +short $NAME)	
+    REGION="test"
 }
 
 function stopContainer {
@@ -130,7 +131,7 @@ case "$1" in
     docker run -d -p 4001:4001 -p 7001:7001 -v $DATA_DIR:$DATA_DIR --name etcd \
         $ETCD_IMAGE \
         -name $NAME -addr $IP:4001 -peer-addr $IP:7001 -data-dir $DATA_DIR \
-        -discovery $DISCOVERY
+        -discovery $DISCOVERY -cors '*'
 	;;
 
 	test-mongo)
@@ -148,13 +149,12 @@ case "$1" in
 	mkdir -p $DATA_DIR/tls
 	[[ -e $DATA_DIR/tls/server.key ]] || cp $SUBLIMINL_ROOT/tls/server.key $DATA_DIR/tls/
 	[[ -e $DATA_DIR/tls/server.crt ]] || cp $SUBLIMINL_ROOT/tls/server.crt $DATA_DIR/tls/
-	docker run --name lb -d -p 80:80 -p 443:443 --link etcd:etcd -v $DATA_DIR:/data $LB_IMAGE
+	docker run --name lb -d -p 80:80 -p 443:443 -e REGION=$REGION --link etcd:etcd -v $DATA_DIR:/data $LB_IMAGE
 	;;
 
 	test-registrator)
     setupDockerVariables
 	stopContainer registrator
-    REGION="test"
     docker run --name registrator -d --link etcd:etcd -v /var/run/docker.sock:/var/run/docker.sock $REGISTRATOR_IMAGE -ip=$IP etcd://etcd:4001/services/$REGION/
     ;;
 
@@ -165,6 +165,32 @@ case "$1" in
 	$0 test-lb
 	;;
 
+	logs)
+	if [ -z $2 ]; then
+		echo "Specify service name"
+		return 1;
+	fi
+	id=$(docker ps | grep -e "[[:alnum:]]*\s*$2\:" | awk '{print $1}')
+	if [ -z $id ]; then
+		echo "Service $2 not found"
+		return 1;
+	fi
+	docker logs -f $id
+	;;
+
+	stop)
+	if [ -z $2 ]; then
+		echo "Specify service name"
+		return 1;
+	fi
+	id=$(docker ps | grep -e "[[:alnum:]]*\s*$2\:" | awk '{print $1}')
+	if [ -z $id ]; then
+		echo "Service $2 not found"
+		return 1;
+	fi
+	docker stop $id
+	;;
+
 	help)
 	cat <<EOF
     help                               Print a list of commands
@@ -172,6 +198,7 @@ case "$1" in
     push LOCAL-IMAGE-NAME              Push a docker image to the registry
     pull LOCAL-IMAGE-NAME              Pull a docker images from the registry
     close-tunnel                       Close any existing SSH tunnel to arvika.subliminl.com
+    logs SERVICE-NAME                  Show the docker logs of a service with given name
     tunnel                             Open aan SSH tunnel to arvika.subliminl.com (named arvika-ssh)
     test-etcd                          Create a local test etcd container
     test-lb                            Create a local test load-balancer container
