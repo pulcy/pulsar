@@ -76,6 +76,38 @@ function createCertificate {
 	fi
 }
 
+# Create a local backup of the API database
+function backupDb {
+	if [ -z "$MONGODB_DB_PASSWORD" ]; then
+		echo "Set MONGODB_DB_PASSWORD first"
+		exit 1
+	fi
+	# Settings
+	dbhost=mongo1.subliminl.com
+	tunnelsocket=~/.ssh-tunnel-mongo1-admin
+
+	# Open SSH tunnel
+	ssh -L27018:localhost:27017 -f -N -M -S $tunnelsocket admin@$dbhost
+
+	# Copy database to local copy
+cat <<EOF | mongo
+use api2
+db.dropDatabase()
+db.copyDatabase('api', 'api2', 'localhost:27018', 'Subliminl', '$MONGODB_DB_PASSWORD')
+EOF
+
+	# Close SSH tunnel
+	ssh -S $tunnelsocket -O exit admin@$dbhost
+}
+
+function restoreDbToLocal {
+	cat <<EOF | mongo
+use api
+db.dropDatabase()
+db.copyDatabase('api2', 'api')
+EOF
+}
+
 case "$1" in
 	images)
 	docker images
@@ -116,6 +148,14 @@ case "$1" in
 
 	close-tunnel)
 	closeTunnel
+	;;
+
+	db-backup)
+	backupDb
+	;;
+
+	db-restore-to-local)
+	restoreDbToLocal
 	;;
 
 	test-etcd)
@@ -209,7 +249,7 @@ EOF
 	;;
 
 	command-list)
-	echo "help install push pull close-tunnel tunnel test-etcd test-lb test-mongo test-registrator test-up"
+	echo "help install push pull close-tunnel tunnel test-etcd test-lb test-mongo test-registrator test-up db-backup db-restore-to-local"
 	;;
 
 	*)
