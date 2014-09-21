@@ -78,6 +78,9 @@ function createCertificate {
 
 # Create a local backup of the API database
 function backupDb {
+	if [ -z $MONGODB_DB_PASSWORD ]; then
+		read -s -p "Enter MongoDB password  : " MONGODB_DB_PASSWORD
+	fi
 	if [ -z "$MONGODB_DB_PASSWORD" ]; then
 		echo "Set MONGODB_DB_PASSWORD first"
 		exit 1
