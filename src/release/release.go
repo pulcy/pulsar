@@ -67,10 +67,8 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 
 	// Check repository state
-	if repoClean, err := isRepoClean(); err != nil {
+	if err := checkRepoClean(log); err != nil {
 		return err
-	} else if !repoClean {
-		return errgo.New("There are uncommited changes")
 	}
 
 	// Bump version
@@ -197,10 +195,20 @@ func writeVersion(log *log.Logger, version string, pkg packageJson, commit bool)
 }
 
 // Are the no uncommited changes in this repo?
-func isRepoClean() (bool, error) {
-	if st, err := git.Status(nil, true); err != nil {
-		return false, err
-	} else {
-		return st == "", nil
+func checkRepoClean(log *log.Logger) error {
+	if st, err := git.Status(log, true); err != nil {
+		return err
+	} else if st != "" {
+		return errgo.New("There are uncommited changes")
 	}
+	if err := git.Fetch(log, "origin"); err != nil {
+		return err
+	}
+	if diff, err := git.Diff(log, "master", "origin/master"); err != nil {
+		return err
+	} else if diff != "" {
+		return errgo.New("Master is not in sync with origin")
+	}
+
+	return nil
 }

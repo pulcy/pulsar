@@ -48,6 +48,24 @@ func Status(log *log.Logger, porcelain bool) (string, error) {
 	}
 }
 
+// Execute a `git status a b`
+func Diff(log *log.Logger, a, b string) (string, error) {
+	args := []string{"diff",
+		a,
+		b,
+	}
+	if msg, err := util.Exec(log, cmdName, args...); err != nil {
+		if log != nil {
+			log.Error(msg)
+		} else {
+			fmt.Printf("%s\n", msg)
+		}
+		return "", err
+	} else {
+		return strings.TrimSpace(msg), nil
+	}
+}
+
 // Execute a `git push`
 func Push(log *log.Logger, remote string, tags bool) error {
 	args := []string{
@@ -67,6 +85,15 @@ func Tag(log *log.Logger, tag string) error {
 	args := []string{
 		"tag",
 		tag,
+	}
+	return util.ExecPrintError(log, cmdName, args...)
+}
+
+// Execute a `git fetch <remote>`
+func Fetch(log *log.Logger, remote string) error {
+	args := []string{
+		"fetch",
+		remote,
 	}
 	return util.ExecPrintError(log, cmdName, args...)
 }
