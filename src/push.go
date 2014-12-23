@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"arvika.subliminl.com/developers/subliminl/docker"
@@ -26,18 +24,13 @@ func init() {
 func runPush(cmd *cobra.Command, args []string) {
 	switch len(args) {
 	case 0:
-		pushUsageError("Too few arguments\n")
+		CommandError(cmd, "Too few arguments\n")
 	case 1:
 		err := docker.Push(log, args[0], pushDockerRegistry)
 		if err != nil {
 			Quitf("%s\n", err)
 		}
 	default:
-		pushUsageError("Too many arguments\n", args[0])
+		CommandError(cmd, "Too many arguments\n")
 	}
-}
-
-func pushUsageError(prefix string, args ...interface{}) {
-	prefix = fmt.Sprintf(prefix, args...)
-	Quitf("%sUsage: %s push image\n", prefix, projectName)
 }

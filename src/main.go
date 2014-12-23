@@ -17,19 +17,12 @@ var (
 	mainCmd = &cobra.Command{
 		Use:   "subliminl",
 		Short: "Subliminl is a helper for development environments",
+		Run:   UsageFunc,
 	}
 )
 
-func init() {
-	mainCmd.Run = runMain
-}
-
 func main() {
 	mainCmd.Execute()
-}
-
-func runMain(cmd *cobra.Command, args []string) {
-	mainCmd.Usage()
 }
 
 func Printf(message string, args ...interface{}) {
@@ -49,4 +42,8 @@ func Infof(message string, args ...interface{}) {
 func CommandError(c *cobra.Command, prefix string, args ...interface{}) {
 	prefix = fmt.Sprintf(prefix, args...)
 	Quitf("%sUsage: %s\n", prefix, c.CommandPath())
+}
+
+func UsageFunc(cmd *cobra.Command, args []string) {
+	cmd.Help()
 }

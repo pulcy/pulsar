@@ -16,7 +16,10 @@ const (
 var (
 	dbName string
 	dbCmd  = &cobra.Command{
-		Use: "db",
+		Use:   "db",
+		Short: "Perform database operations",
+		Long:  "Perform database operations",
+		Run:   UsageFunc,
 	}
 	dbBackupCmd = &cobra.Command{
 		Use:   "backup",
