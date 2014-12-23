@@ -119,11 +119,11 @@ case "$1" in
 	install)
 	# Link in this script
 	mkdir -p $HOME/bin
-    ln -sf $SUBLIMINL_ME $HOME/bin/subliminl
+    ln -sf $SUBLIMINL_DIR/../subliminl $HOME/bin/subliminl
     ln -sf $SUBLIMINL_ME.autocomplete $HOME/bin/subliminl.autocomplete
     # Setup script auto completion
     existing=$(grep -E "^source .*subliminl.autocomplete" ~/.bashrc)
-    if [ -z $existing ]; then
+    if [[ -z $existing ]]; then
     	echo "source $HOME/bin/subliminl.autocomplete" >> ~/.bashrc
     fi
     # Setup npm registry

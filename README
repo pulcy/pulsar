@@ -20,6 +20,7 @@ git clone ssh://git@arvika.subliminl.com:26402/developers/development-environmen
 Install Subliminl development tools (inside development-environment repository): 
 
 ```
+make
 ./scripts/subliminl install
 ```
 
