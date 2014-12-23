@@ -10,6 +10,7 @@ import (
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
+	"arvika.subliminl.com/developers/subliminl/docker"
 	"arvika.subliminl.com/developers/subliminl/git"
 	"arvika.subliminl.com/developers/subliminl/tunnel"
 	"arvika.subliminl.com/developers/subliminl/util"
@@ -123,16 +124,7 @@ func Release(log *log.Logger, flags *Flags) error {
 		}
 		if flags.DockerRegistry != "" {
 			// Push image to registry
-			registryTag := fmt.Sprintf("%s/%s", flags.DockerRegistry, tag)
-			if err := util.ExecPrintError(log, "docker", "tag", tag, registryTag); err != nil {
-				return err
-			}
-			// Push
-			if err := util.ExecPrintError(log, "docker", "push", registryTag); err != nil {
-				return err
-			}
-			// Remove registry tag
-			if err := util.ExecPrintError(log, "docker", "rmi", registryTag); err != nil {
+			if err := docker.Push(log, tag, flags.DockerRegistry); err != nil {
 				return err
 			}
 		}
