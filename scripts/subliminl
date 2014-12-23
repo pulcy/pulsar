@@ -211,12 +211,12 @@ case "$1" in
 	logs)
 	if [ -z $2 ]; then
 		echo "Specify service name"
-		return 1;
+		exit 1;
 	fi
 	id=$(docker ps | grep -e "[[:alnum:]]*\s*$2\:" | awk '{print $1}')
 	if [ -z $id ]; then
 		echo "Service $2 not found"
-		return 1;
+		exit 1;
 	fi
 	docker logs -f $id
 	;;
@@ -224,14 +224,29 @@ case "$1" in
 	stop)
 	if [ -z $2 ]; then
 		echo "Specify service name"
-		return 1;
+		exit 1;
 	fi
 	id=$(docker ps | grep -e "[[:alnum:]]*\s*$2\:" | awk '{print $1}')
 	if [ -z $id ]; then
 		echo "Service $2 not found"
-		return 1;
+		exit 1;
 	fi
 	docker stop $id
+	;;
+
+	ssh)
+	if [ -z $2 ]; then
+		echo "Specify service name"
+		exit 1;
+	fi
+	id=$(docker ps | grep -e "[[:alnum:]]*\s*$2\:" | awk '{print $1}')
+	if [ -z $id ]; then
+		echo "Service $2 not found"
+		exit 1;
+	fi
+	ipaddr=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $id)
+	port=$(docker port $id 22/tcp | awk -F: '{print $2}')
+	ssh -p $port $3@$ipaddr 
 	;;
 
 	help)
