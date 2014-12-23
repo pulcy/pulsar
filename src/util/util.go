@@ -3,28 +3,84 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os/exec"
 
 	log "github.com/op/go-logging"
 )
 
+type Command struct {
+	log       *log.Logger
+	stdout    bytes.Buffer
+	stderr    bytes.Buffer
+	cmd       *exec.Cmd
+	cmdName   string
+	arguments []string
+}
+
+func PrepareCommand(log *log.Logger, cmdName string, arguments ...string) *Command {
+	c := &Command{
+		log:       log,
+		cmdName:   cmdName,
+		arguments: arguments,
+		cmd:       exec.Command(cmdName, arguments...),
+	}
+	c.cmd.Stdout = &c.stdout
+	c.cmd.Stderr = &c.stderr
+	return c
+}
+
+func (c *Command) Announce() {
+	if c.log != nil {
+		c.log.Debug("Running %s %v", c.cmdName, c.arguments)
+	}
+}
+
+// Connect stdin to the given reader
+func (c *Command) SetStdin(r io.Reader) {
+	c.cmd.Stdin = r
+}
+
+// Connect stdout to the given writer
+func (c *Command) SetStdout(w io.Writer) {
+	c.cmd.Stdout = w
+}
+
+// Connect stderr to the given writer
+func (c *Command) SetStderr(w io.Writer) {
+	c.cmd.Stderr = w
+}
+
+// Execute a given command.
+// Return stderr on error, stdout on no error
+func (c *Command) Run() (string, error) {
+	err := c.cmd.Run()
+	if err != nil {
+		return c.stderr.String(), err
+	} else {
+		return c.stdout.String(), nil
+	}
+}
+
+// Execute a given command, printing stderr in case of an error
+func (c *Command) RunPrintError() error {
+	if data, err := c.Run(); err != nil {
+		if c.log != nil {
+			c.log.Error(data)
+		} else {
+			fmt.Printf("%s\n", data)
+		}
+		return err
+	}
+	return nil
+}
+
 // Execute a given command.
 // Return stderr on error, stdout on no error
 func Exec(log *log.Logger, cmdName string, arguments ...string) (string, error) {
-	if log != nil {
-		log.Debug("Running %s %v", cmdName, arguments)
-	}
-	cmd := exec.Command(cmdName, arguments...)
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		return stderr.String(), err
-	} else {
-		return stdout.String(), nil
-	}
+	cmd := PrepareCommand(log, cmdName, arguments...)
+	cmd.Announce()
+	return cmd.Run()
 }
 
 // Execute a given command without waiting for its result.
@@ -38,13 +94,7 @@ func ExecDetached(log *log.Logger, cmdName string, arguments ...string) error {
 
 // Execute a given command, printing stderr in case of an error
 func ExecPrintError(log *log.Logger, cmdName string, arguments ...string) error {
-	if data, err := Exec(log, cmdName, arguments...); err != nil {
-		if log != nil {
-			log.Error(data)
-		} else {
-			fmt.Printf("%s\n", data)
-		}
-		return err
-	}
-	return nil
+	cmd := PrepareCommand(log, cmdName, arguments...)
+	cmd.Announce()
+	return cmd.RunPrintError()
 }

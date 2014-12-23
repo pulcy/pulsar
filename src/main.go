@@ -45,3 +45,8 @@ func Quitf(message string, args ...interface{}) {
 func Infof(message string, args ...interface{}) {
 	fmt.Printf(message, args...)
 }
+
+func CommandError(c *cobra.Command, prefix string, args ...interface{}) {
+	prefix = fmt.Sprintf(prefix, args...)
+	Quitf("%sUsage: %s\n", prefix, c.CommandPath())
+}
