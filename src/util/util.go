@@ -27,6 +27,15 @@ func Exec(log *log.Logger, cmdName string, arguments ...string) (string, error) 
 	}
 }
 
+// Execute a given command without waiting for its result.
+func ExecDetached(log *log.Logger, cmdName string, arguments ...string) error {
+	if log != nil {
+		log.Debug("Running %s %v", cmdName, arguments)
+	}
+	cmd := exec.Command(cmdName, arguments...)
+	return cmd.Start()
+}
+
 // Execute a given command, printing stderr in case of an error
 func ExecPrintError(log *log.Logger, cmdName string, arguments ...string) error {
 	if data, err := Exec(log, cmdName, arguments...); err != nil {

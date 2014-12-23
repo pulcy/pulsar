@@ -11,6 +11,7 @@ import (
 	log "github.com/op/go-logging"
 
 	"arvika.subliminl.com/developers/subliminl/git"
+	"arvika.subliminl.com/developers/subliminl/tunnel"
 	"arvika.subliminl.com/developers/subliminl/util"
 )
 
@@ -89,6 +90,11 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Write new release version
 	if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
+		return err
+	}
+
+	// Open SSH tunnel
+	if err := tunnel.OpenTunnel(log); err != nil {
 		return err
 	}
 
