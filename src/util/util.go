@@ -51,6 +51,11 @@ func (c *Command) SetStderr(w io.Writer) {
 	c.cmd.Stderr = w
 }
 
+// Sets the directory in which to execute the commands
+func (c *Command) SetDir(dir string) {
+	c.cmd.Dir = dir
+}
+
 // Execute a given command.
 // Return stderr on error, stdout on no error
 func (c *Command) Run() (string, error) {
