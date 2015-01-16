@@ -25,11 +25,13 @@ func Get(log *log.Logger, flags *Flags) error {
 	}
 	// Make sure a clone exists
 	_, err = os.Stat(flags.Folder)
+	cloned := false
 	if os.IsNotExist(err) {
 		// Clone repo into folder
 		if err := git.Clone(log, flags.RepoUrl, flags.Folder); err != nil {
 			return err
 		}
+		cloned = true
 	}
 	// Change dir to folder
 	if err := os.Chdir(flags.Folder); err != nil {
@@ -38,8 +40,10 @@ func Get(log *log.Logger, flags *Flags) error {
 	// Specific version needed?
 	if flags.Version == "" {
 		// Get latest version
-		if err := git.Pull(log, "origin"); err != nil {
-			return err
+		if !cloned {
+			if err := git.Pull(log, "origin"); err != nil {
+				return err
+			}
 		}
 	} else {
 		// Get latest (local) version
