@@ -9,6 +9,10 @@ import (
 	"arvika.subliminl.com/developers/subliminl/git"
 )
 
+const (
+	defaultGetBranch = "master"
+)
+
 type Flags struct {
 	Folder  string
 	RepoUrl string
@@ -41,8 +45,20 @@ func Get(log *log.Logger, flags *Flags) error {
 	if flags.Version == "" {
 		// Get latest version
 		if !cloned {
-			if err := git.Pull(log, "origin"); err != nil {
+			localCommit, err := git.GetLatestLocalCommit(nil, flags.Folder, defaultGetBranch)
+			if err != nil {
 				return err
+			}
+			remoteCommit, err := git.GetLatestRemoteCommit(nil, flags.RepoUrl, defaultGetBranch)
+			if err != nil {
+				return err
+			}
+			if localCommit != remoteCommit {
+				if err := git.Pull(log, "origin"); err != nil {
+					return err
+				}
+			} else {
+				log.Debug("%s is up to date", flags.Folder)
 			}
 		}
 	} else {
