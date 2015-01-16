@@ -17,14 +17,15 @@ import (
 )
 
 const (
-	packageJsonFile = "package.json"
-	versionFile     = "VERSION"
-	nameKey         = "name"
-	versionKey      = "version"
-	makefileFile    = "Makefile"
-	gruntfileFile   = "Gruntfile.js"
-	dockerfileFile  = "Dockerfile"
-	defaultPerm     = 0664
+	packageJsonFile   = "package.json"
+	versionFile       = "VERSION"
+	nameKey           = "name"
+	versionKey        = "version"
+	makefileFile      = "Makefile"
+	gruntfileFile     = "Gruntfile.js"
+	dockerfileFile    = "Dockerfile"
+	defaultPerm       = 0664
+	nodeModulesFolder = "node_modules"
 )
 
 type Flags struct {
@@ -99,6 +100,12 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Build project
 	if hasGruntfile {
+		if _, err := os.Stat(nodeModulesFolder); os.IsNotExist(err) {
+			log.Info("Folder %s not found", nodeModulesFolder)
+			if err := util.ExecPrintError(log, "npm", "install"); err != nil {
+				return err
+			}
+		}
 		if err := util.ExecPrintError(log, "grunt", "build-release"); err != nil {
 			return err
 		}
