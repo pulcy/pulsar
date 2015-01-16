@@ -187,3 +187,36 @@ func GetLatestRemoteTag(log *log.Logger, repoUrl string) (string, error) {
 	}
 	return "", nil
 }
+
+// Gets the latest commit hash from the given local git folder.
+func GetLatestLocalCommit(log *log.Logger, folder, branch string) (string, error) {
+	if branch == "" {
+		branch = "HEAD"
+	}
+	args := []string{
+		"rev-parse",
+		branch,
+	}
+	output, err := util.Exec(log, cmdName, args...)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(output), nil
+}
+
+// Gets the latest commit hash from the given remote git repo + optional branch.
+func GetLatestRemoteCommit(log *log.Logger, repoUrl, branch string) (string, error) {
+	args := []string{
+		"ls-remote",
+		repoUrl,
+	}
+	if branch != "" {
+		args = append(args, branch)
+	}
+	output, err := util.Exec(log, cmdName, args...)
+	if err != nil {
+		return "", err
+	}
+	parts := strings.Split(output, "\t")
+	return parts[0], nil
+}
