@@ -7,7 +7,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/subliminl/util"
+	"arvika.subliminl.com/developers/devtool/util"
 )
 
 const (

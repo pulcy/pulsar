@@ -7,8 +7,8 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/subliminl/tunnel"
-	"arvika.subliminl.com/developers/subliminl/util"
+	"arvika.subliminl.com/developers/devtool/tunnel"
+	"arvika.subliminl.com/developers/devtool/util"
 )
 
 // Copy the production database to local

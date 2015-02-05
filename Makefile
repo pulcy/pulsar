@@ -1,4 +1,4 @@
-PROJECT := subliminl
+PROJECT := devtool
 SCRIPTDIR := $(shell pwd)
 VERSION:= $(shell cat VERSION)
 COMMIT := $(shell git rev-parse HEAD | cut -c1-8)
@@ -18,6 +18,14 @@ GOPATH := $(GOBUILDDIR)
 
 SOURCES := $(shell find $(SRCDIR) -name '*.go')
 
+ifndef GOOS
+	GOOS := $(shell go env GOOS)
+endif
+ifndef GOARCH
+	GOARCH := $(shell go env GOARCH)
+endif	
+
+
 .PHONY: clean test
 
 all: $(BIN)
@@ -27,7 +35,7 @@ clean:
 
 .gobuild: 
 	mkdir -p $(ORGDIR)
-	ln -s $(SRCDIR) $(REPODIR)
+	rm -f $(REPODIR) && ln -s ../../../../src $(REPODIR)
 	git clone git@github.com:Subliminl/errgo.git $(GOBUILDDIR)/src/github.com/juju/errgo
 	git clone git@github.com:Subliminl/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
 	git clone git@github.com:Subliminl/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
@@ -35,7 +43,15 @@ clean:
 	git clone git@github.com:Subliminl/semver.git $(GOBUILDDIR)/src/github.com/blang/semver
 
 $(BIN): .gobuild $(SOURCES) 
-	GOBIN=$(BINDIR) GOPATH=$(GOPATH) go build -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o $(BIN) $(REPOPATH)
+	docker run \
+	    --rm \
+	    -v $(SCRIPTDIR):/usr/code \
+	    -e GOPATH=/usr/code/.gobuild \
+	    -e GOOS=$(GOOS) \
+	    -e GOARCH=$(GOARCH) \
+	    -w /usr/code/src \
+	    golang:1.3.1-cross \
+	    go build -a -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o ../$(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler

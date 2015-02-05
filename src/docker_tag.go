@@ -4,7 +4,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/spf13/cobra"
 
-	"arvika.subliminl.com/developers/subliminl/release"
+	"arvika.subliminl.com/developers/devtool/release"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"arvika.subliminl.com/developers/subliminl/mongo"
+	"arvika.subliminl.com/developers/devtool/mongo"
 )
 
 const (
