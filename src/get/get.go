@@ -27,6 +27,10 @@ func Get(log *log.Logger, flags *Flags) error {
 	if err != nil {
 		return err
 	}
+
+	// Get current folder
+	wd, _ := os.Getwd()
+
 	// Make sure a clone exists
 	_, err = os.Stat(flags.Folder)
 	cloned := false
@@ -58,7 +62,7 @@ func Get(log *log.Logger, flags *Flags) error {
 					return err
 				}
 			} else {
-				log.Debug("%s is up to date", flags.Folder)
+				log.Info("%s is up to date\n", makeRel(wd, flags.Folder))
 			}
 		}
 	} else {
@@ -69,9 +73,16 @@ func Get(log *log.Logger, flags *Flags) error {
 		}
 		if localVersion != flags.Version {
 			// Checkout requested version
-			log.Info("Found version %s, wanted %s", localVersion, flags.Version)
+			if cloned {
+				log.Info("Checking out version %s in %s.\n", flags.Version, makeRel(wd, flags.Folder))
+			} else {
+				log.Info("Found version %s, wanted %s. Updating %s now.\n", localVersion, flags.Version, makeRel(wd, flags.Folder))
+			}
 			// Fetch latest changes
 			if err := git.Fetch(log, "origin"); err != nil {
+				return err
+			}
+			if err := git.FetchTags(log, "origin"); err != nil {
 				return err
 			}
 			// Checkout intended version
@@ -79,7 +90,7 @@ func Get(log *log.Logger, flags *Flags) error {
 				return err
 			}
 		} else {
-			//log.Info("Found correct version of %s", flags.Folder)
+			log.Info("Found correct version. No changes needed in %s\n", makeRel(wd, flags.Folder))
 		}
 		// Get latest remote version
 		remoteVersion, err := git.GetLatestRemoteTag(nil, flags.RepoUrl)
@@ -87,8 +98,18 @@ func Get(log *log.Logger, flags *Flags) error {
 			return err
 		}
 		if remoteVersion != flags.Version {
-			log.Warning("Latest remote version '%s' is different from requested version '%s'", remoteVersion, flags.Version)
+			log.Warning("Update available for %s: '%s' => '%s'\n", makeRel(wd, flags.Folder), flags.Version, remoteVersion)
 		}
 	}
 	return nil
+}
+
+// makeRel tries to make the given path relative to the current directory.
+// Returns a full path in case of errors.
+func makeRel(wd, path string) string {
+	rel, err := filepath.Rel(wd, path)
+	if err != nil {
+		return path
+	}
+	return rel
 }
