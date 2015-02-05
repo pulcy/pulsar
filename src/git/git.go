@@ -113,6 +113,16 @@ func Fetch(log *log.Logger, remote string) error {
 	return util.ExecPrintError(log, cmdName, args...)
 }
 
+// Execute a `git fetch --tags <remote>`
+func FetchTags(log *log.Logger, remote string) error {
+	args := []string{
+		"fetch",
+		"--tags",
+		remote,
+	}
+	return util.ExecPrintError(log, cmdName, args...)
+}
+
 // Execute a `git clone <repo-url> <folder>`
 func Clone(log *log.Logger, repoUrl, folder string) error {
 	args := []string{
