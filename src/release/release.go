@@ -10,10 +10,10 @@ import (
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/subliminl/docker"
-	"arvika.subliminl.com/developers/subliminl/git"
-	"arvika.subliminl.com/developers/subliminl/tunnel"
-	"arvika.subliminl.com/developers/subliminl/util"
+	"arvika.subliminl.com/developers/devtool/docker"
+	"arvika.subliminl.com/developers/devtool/git"
+	"arvika.subliminl.com/developers/devtool/tunnel"
+	"arvika.subliminl.com/developers/devtool/util"
 )
 
 const (

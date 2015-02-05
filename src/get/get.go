@@ -6,7 +6,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/subliminl/git"
+	"arvika.subliminl.com/developers/devtool/git"
 )
 
 const (
