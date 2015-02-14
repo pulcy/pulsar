@@ -12,7 +12,22 @@ type ProjectInfo struct {
 	Name    string
 	Version string
 	pkg     map[string]interface{}
+	Image   string
+	Targets struct {
+		CleanTarget string
+	}
 }
+
+type ProjectSettings struct {
+	Image   string `json:"image"` // Docker image name
+	Targets struct {
+		CleanTarget string `json:"clean"`
+	} `json:"targets"`
+}
+
+const (
+	projectSettingsFile = ".devtool"
+)
 
 func GetProjectInfo() (*ProjectInfo, error) {
 	// Read the current version and name
@@ -44,11 +59,31 @@ func GetProjectInfo() (*ProjectInfo, error) {
 			project = path.Base(dir)
 		}
 	}
-	return &ProjectInfo{
+
+	// Read project settings (if any)
+	image := project
+	settings, err := readProjectSettings()
+	if err != nil {
+		return nil, err
+	}
+	if settings != nil {
+		if settings.Image != "" {
+			image = settings.Image
+		}
+	}
+
+	result := &ProjectInfo{
 		Name:    project,
+		Image:   image,
 		Version: oldVersion,
 		pkg:     pkg,
-	}, nil
+	}
+	result.Targets.CleanTarget = "clean"
+	if settings != nil && settings.Targets.CleanTarget != "" {
+		result.Targets.CleanTarget = settings.Targets.CleanTarget
+	}
+
+	return result, nil
 }
 
 // Try to read package.json
@@ -78,5 +113,22 @@ func readVersion() (string, error) {
 		}
 	} else {
 		return strings.TrimSpace(string(data)), nil
+	}
+}
+
+// Try to read .devtool file
+func readProjectSettings() (*ProjectSettings, error) {
+	if data, err := ioutil.ReadFile(projectSettingsFile); err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		result := &ProjectSettings{}
+		if err := json.Unmarshal(data, result); err != nil {
+			return nil, err
+		}
+		return result, nil
 	}
 }
