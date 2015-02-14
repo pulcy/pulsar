@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	dockerTagCmd = &cobra.Command{
+	dockerTagImage string
+	dockerTagCmd   = &cobra.Command{
 		Use:   "docker-tag",
 		Short: "Get the docker tag for the current project",
 		Long:  "Returns the image:tag for the current project",
@@ -17,6 +18,7 @@ var (
 )
 
 func init() {
+	dockerTagCmd.Flags().StringVarP(&dockerTagImage, "image", "i", "", "Docker image name")
 	mainCmd.AddCommand(dockerTagCmd)
 }
 
@@ -33,5 +35,8 @@ func runDockerTag(cmd *cobra.Command, args []string) {
 	if version.Metadata != "" {
 		tag = "latest"
 	}
-	Printf("%s:%s", info.Name, tag)
+	if dockerTagImage == "" {
+		dockerTagImage = info.Name
+	}
+	Printf("%s:%s", dockerTagImage, tag)
 }
