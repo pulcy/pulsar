@@ -10,13 +10,13 @@ import (
 
 var (
 	projectVersion = "dev"
-	projectName    = "subliminl"
+	projectName    = "devtool"
 	projectBuild   = "dev"
 	log            = logPkg.MustGetLogger(projectName)
 
 	mainCmd = &cobra.Command{
-		Use:   "subliminl",
-		Short: "Subliminl is a helper for development environments",
+		Use:   projectName,
+		Short: "Devtool is a helper for development environments",
 		Run:   UsageFunc,
 	}
 )
