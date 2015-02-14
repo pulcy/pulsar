@@ -30,6 +30,11 @@ func init() {
 		Short: "List all projects",
 		Run:   runListGitlabProjects,
 	})
+	gitlabCmd.AddCommand(&cobra.Command{
+		Use:   "clone-all",
+		Short: "Clone all projects",
+		Run:   runCloneGitlabProjects,
+	})
 }
 
 func mergeDefaultGitlabConfig() {
@@ -54,6 +59,14 @@ func runListGitlabProjects(cmd *cobra.Command, args []string) {
 	mergeDefaultGitlabConfig()
 	err := gitlab.ListProjects(gitlabFlags)
 	if err != nil {
-		Quitf("Cannot list projects: %v\n", err)
+		Quitf("Failed to list projects: %v\n", err)
+	}
+}
+
+func runCloneGitlabProjects(cmd *cobra.Command, args []string) {
+	mergeDefaultGitlabConfig()
+	err := gitlab.CloneProjects(gitlabFlags)
+	if err != nil {
+		Quitf("Failed to clone projects: %v\n", err)
 	}
 }

@@ -9,6 +9,8 @@ import (
 
 	"github.com/bugagazavr/go-gitlab-client"
 	"github.com/juju/errgo"
+
+	"arvika.subliminl.com/developers/devtool/git"
 )
 
 const (
@@ -53,6 +55,25 @@ func ListProjects(config *Config) error {
 	}
 	for _, p := range projects {
 		fmt.Printf("%s\n", p.Name)
+	}
+	return nil
+}
+
+// Clone all projects in the current folder
+func CloneProjects(config *Config) error {
+	gitlab := gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
+	projects, err := gitlab.AllProjects()
+	if err != nil {
+		return Mask(err)
+	}
+	for _, p := range projects {
+		if _, err := os.Stat(p.Name); err == nil {
+			// Folder already exists, don't clone
+			continue
+		}
+
+		fmt.Printf("Cloning %s\n", p.Name)
+		git.Clone(nil, p.SshRepoUrl, p.Name)
 	}
 	return nil
 }
