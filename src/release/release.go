@@ -112,7 +112,7 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 	if hasMakefile {
 		// Clean first
-		if err := util.ExecPrintError(log, "make", "clean"); err != nil {
+		if err := util.ExecPrintError(log, "make", info.Targets.CleanTarget); err != nil {
 			return err
 		}
 		// Now build
@@ -123,7 +123,7 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	if hasDockerfile {
 		// Build docker images
-		tag := fmt.Sprintf("%s:%s", info.Name, version.String())
+		tag := fmt.Sprintf("%s:%s", info.Image, version.String())
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
 			return err
 		}
