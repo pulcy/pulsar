@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bugagazavr/go-gitlab-client"
 	"github.com/juju/errgo"
+	"github.com/subliminl/go-gitlab-client"
 
 	"arvika.subliminl.com/developers/devtool/git"
 )
@@ -54,6 +54,9 @@ func ListProjects(config *Config) error {
 		return Mask(err)
 	}
 	for _, p := range projects {
+		if p.Archived {
+			continue
+		}
 		fmt.Printf("%s\n", p.Name)
 	}
 	return nil
@@ -67,6 +70,9 @@ func CloneProjects(config *Config) error {
 		return Mask(err)
 	}
 	for _, p := range projects {
+		if p.Archived {
+			continue
+		}
 		if _, err := os.Stat(p.Name); err == nil {
 			// Folder already exists, don't clone
 			continue
