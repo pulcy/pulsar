@@ -266,3 +266,16 @@ func GetConfig(log *log.Logger, key string) (string, error) {
 func GetRemoteOriginUrl(log *log.Logger) (string, error) {
 	return GetConfig(log, "remote.origin.url")
 }
+
+// git show-branch --merge-base
+func GetMergeBase(log *log.Logger) (string, error) {
+	args := []string{
+		"show-branch",
+		"--merge-base",
+	}
+	output, err := util.Exec(log, cmdName, args...)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(output), nil
+}

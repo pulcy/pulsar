@@ -87,20 +87,27 @@ func CloneProjects(config *Config) error {
 }
 
 // AddPullRequest creates a new pull request for the current branch.
-func AddPullRequest(config *Config) error {
+func AddPullRequest(config *Config, targetBranch, title string) error {
 	gitlab := gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
 	id, err := getProjectId(gitlab)
 	if err != nil {
 		return Mask(err)
 	}
-	fmt.Println(id)
+	fmt.Printf("Project id: %s\n", id)
+	//fmt.Println(id)
 
-	targetBranch, err := git.GetLocalBranchName(nil)
+	sourceBranch, err := git.GetLocalBranchName(nil)
 	if err != nil {
 		return Mask(err)
 	}
-	fmt.Println(targetBranch)
-	//gitlab.AddMergeRequest(id, sourceBranch, targetBranch, title)
+	fmt.Printf("Source branch: %s\n", sourceBranch)
+	fmt.Printf("Target branch: %s\n", targetBranch)
+
+	err = gitlab.AddMergeRequest(id, sourceBranch, targetBranch, title)
+	if err != nil {
+		return Mask(err)
+	}
+
 	return nil
 }
 
