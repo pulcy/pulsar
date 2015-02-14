@@ -40,8 +40,8 @@ clean:
 	git clone git@github.com:Subliminl/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
 	git clone git@github.com:Subliminl/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
 	git clone git@github.com:Subliminl/cobra.git $(GOBUILDDIR)/src/github.com/spf13/cobra
-	git clone git@github.com:Subliminl/semver.git $(GOBUILDDIR)/src/github.com/blang/semver
 	GOPATH=$(GOPATH) go get github.com/bugagazavr/go-gitlab-client
+	GOPATH=$(GOPATH) go get github.com/coreos/go-semver/semver
 
 $(BIN): .gobuild $(SOURCES) 
 	docker run \
