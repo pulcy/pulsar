@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/juju/errgo"
 	"github.com/subliminl/go-gitlab-client"
@@ -18,7 +19,8 @@ const (
 )
 
 var (
-	Mask = errgo.Mask
+	Mask               = errgo.Mask
+	ErrProjectNotFound = errgo.New("Project now found")
 )
 
 type Config struct {
@@ -82,4 +84,47 @@ func CloneProjects(config *Config) error {
 		git.Clone(nil, p.SshRepoUrl, p.Name)
 	}
 	return nil
+}
+
+// AddPullRequest creates a new pull request for the current branch.
+func AddPullRequest(config *Config, targetBranch, title string) error {
+	gitlab := gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
+	id, err := getProjectId(gitlab)
+	if err != nil {
+		return Mask(err)
+	}
+	fmt.Printf("Project id: %s\n", id)
+	//fmt.Println(id)
+
+	sourceBranch, err := git.GetLocalBranchName(nil)
+	if err != nil {
+		return Mask(err)
+	}
+	fmt.Printf("Source branch: %s\n", sourceBranch)
+	fmt.Printf("Target branch: %s\n", targetBranch)
+
+	err = gitlab.AddMergeRequest(id, sourceBranch, targetBranch, title)
+	if err != nil {
+		return Mask(err)
+	}
+
+	return nil
+}
+
+// getProjectId looks up the gitlab project id of the current project
+func getProjectId(gitlab *gogitlab.Gitlab) (string, error) {
+	url, err := git.GetRemoteOriginUrl(nil)
+	if err != nil {
+		return "", Mask(err)
+	}
+	projects, err := gitlab.AllProjects()
+	if err != nil {
+		return "", Mask(err)
+	}
+	for _, p := range projects {
+		if p.SshRepoUrl == url {
+			return strconv.Itoa(p.Id), nil
+		}
+	}
+	return "", ErrProjectNotFound
 }

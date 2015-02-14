@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	defaultGitlabHost    = "https://arvika.subliminl.com"
-	defaultGitlabApiPath = "/api/v3"
+	defaultGitlabHost           = "https://arvika.subliminl.com"
+	defaultGitlabApiPath        = "/api/v3"
+	defaultGitlabPrTargetBranch = "master"
 )
 
 var (
@@ -18,6 +19,8 @@ var (
 		Short: "Gitlab utilities",
 		Run:   UsageFunc,
 	}
+
+	gitlabPrTargetBranch string
 )
 
 func init() {
@@ -35,6 +38,13 @@ func init() {
 		Short: "Clone all projects",
 		Run:   runCloneGitlabProjects,
 	})
+	prCmd := &cobra.Command{
+		Use:   "pr",
+		Short: "Create pull request",
+		Run:   runGitlabCreatePullRequest,
+	}
+	prCmd.Flags().StringVarP(&gitlabPrTargetBranch, "target", "", defaultGitlabPrTargetBranch, "Specify target branch")
+	gitlabCmd.AddCommand(prCmd)
 }
 
 func mergeDefaultGitlabConfig() {
@@ -68,5 +78,18 @@ func runCloneGitlabProjects(cmd *cobra.Command, args []string) {
 	err := gitlab.CloneProjects(gitlabFlags)
 	if err != nil {
 		Quitf("Failed to clone projects: %v\n", err)
+	}
+}
+
+func runGitlabCreatePullRequest(cmd *cobra.Command, args []string) {
+	mergeDefaultGitlabConfig()
+
+	if len(args) == 0 {
+		Quitf("Please provide a title\n")
+	}
+	title := args[0]
+	err := gitlab.AddPullRequest(gitlabFlags, gitlabPrTargetBranch, title)
+	if err != nil {
+		Quitf("Failed to add PR: %v\n", err)
 	}
 }
