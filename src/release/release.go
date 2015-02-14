@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/blang/semver"
+	"github.com/coreos/go-semver/semver"
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
@@ -62,7 +62,7 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 
 	log.Info("Found old version %s", info.Version)
-	version, err := semver.New(info.Version)
+	version, err := semver.NewVersion(info.Version)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func Release(log *log.Logger, flags *Flags) error {
 	default:
 		return errgo.Newf("Unknown release type %s", flags.ReleaseType)
 	}
-	version.Build = []string{}
+	version.Metadata = ""
 
 	// Write new release version
 	if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
@@ -146,7 +146,7 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 
 	// Update version to "+git" working version
-	version.Build = []string{"git"}
+	version.Metadata = "git"
 
 	// Write new release version
 	if err := writeVersion(log, version.String(), info.pkg, true); err != nil {

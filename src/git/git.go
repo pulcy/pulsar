@@ -3,6 +3,7 @@ package git
 import (
 	"bufio"
 	"fmt"
+	"sort"
 	"strings"
 
 	log "github.com/op/go-logging"
@@ -14,8 +15,6 @@ const (
 	cmdName   = "git"
 	tagMarker = "refs/tags/"
 )
-
-type TagList []string
 
 // Execute a `git add`
 func Add(log *log.Logger, files ...string) error {
@@ -183,6 +182,10 @@ func GetRemoteTags(log *log.Logger, repoUrl string) (TagList, error) {
 	if err := scanner.Err(); err != nil {
 		return tags, err
 	}
+
+	// Sort tags from high to low
+	sort.Sort(tags)
+
 	return tags, nil
 }
 
@@ -193,7 +196,7 @@ func GetLatestRemoteTag(log *log.Logger, repoUrl string) (string, error) {
 		return "", err
 	}
 	if len(tags) > 0 {
-		return tags[len(tags)-1], nil
+		return tags[0], nil
 	}
 	return "", nil
 }

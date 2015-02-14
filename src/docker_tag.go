@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/blang/semver"
+	"github.com/coreos/go-semver/semver"
 	"github.com/spf13/cobra"
 
 	"arvika.subliminl.com/developers/devtool/release"
@@ -25,12 +25,12 @@ func runDockerTag(cmd *cobra.Command, args []string) {
 	if err != nil {
 		Quitf("%s\n", err)
 	}
-	version, err := semver.New(info.Version)
+	version, err := semver.NewVersion(info.Version)
 	if err != nil {
 		Quitf("%s\n", err)
 	}
 	tag := version.String()
-	if len(version.Build) > 0 {
+	if version.Metadata != "" {
 		tag = "latest"
 	}
 	Printf("%s:%s", info.Name, tag)
