@@ -40,7 +40,7 @@ clean:
 	git clone git@github.com:Subliminl/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
 	git clone git@github.com:Subliminl/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
 	git clone git@github.com:Subliminl/cobra.git $(GOBUILDDIR)/src/github.com/spf13/cobra
-	git clone git@github.com:Subliminl/go-gitlab-client.git $(GOBUILDDIR)/src/github.com/subliminl/go-gitlab-client
+	git clone -b add-mr git@github.com:Subliminl/go-gitlab-client.git $(GOBUILDDIR)/src/github.com/subliminl/go-gitlab-client
 	GOPATH=$(GOPATH) go get github.com/coreos/go-semver/semver
 
 $(BIN): .gobuild $(SOURCES) 

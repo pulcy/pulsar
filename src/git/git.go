@@ -233,3 +233,36 @@ func GetLatestRemoteCommit(log *log.Logger, repoUrl, branch string) (string, err
 	parts := strings.Split(output, "\t")
 	return parts[0], nil
 }
+
+// Gets the name of the current branch
+func GetLocalBranchName(log *log.Logger) (string, error) {
+	args := []string{
+		"rev-parse",
+		"--abbrev-ref",
+		"HEAD",
+	}
+	output, err := util.Exec(log, cmdName, args...)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(output), nil
+}
+
+// Gets the a config value
+func GetConfig(log *log.Logger, key string) (string, error) {
+	args := []string{
+		"config",
+		"--get",
+		key,
+	}
+	output, err := util.Exec(log, cmdName, args...)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(output), nil
+}
+
+// Gets the config value for "remote.origin.url"
+func GetRemoteOriginUrl(log *log.Logger) (string, error) {
+	return GetConfig(log, "remote.origin.url")
+}

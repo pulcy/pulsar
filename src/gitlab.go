@@ -35,6 +35,11 @@ func init() {
 		Short: "Clone all projects",
 		Run:   runCloneGitlabProjects,
 	})
+	gitlabCmd.AddCommand(&cobra.Command{
+		Use:   "pr",
+		Short: "Create pull request",
+		Run:   runGitlabCreatePullRequest,
+	})
 }
 
 func mergeDefaultGitlabConfig() {
@@ -68,5 +73,13 @@ func runCloneGitlabProjects(cmd *cobra.Command, args []string) {
 	err := gitlab.CloneProjects(gitlabFlags)
 	if err != nil {
 		Quitf("Failed to clone projects: %v\n", err)
+	}
+}
+
+func runGitlabCreatePullRequest(cmd *cobra.Command, args []string) {
+	mergeDefaultGitlabConfig()
+	err := gitlab.AddPullRequest(gitlabFlags)
+	if err != nil {
+		Quitf("Failed to add PR: %v\n", err)
 	}
 }
