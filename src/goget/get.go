@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mgutz/ansi"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
 
@@ -19,6 +20,12 @@ const (
 	cacheDir        = "~/devtool-cache"
 	srcDir          = "src"
 	cacheValidHours = 12
+)
+
+var (
+	allGood   = ansi.ColorFunc("")
+	updating  = ansi.ColorFunc("cyan")
+	attention = ansi.ColorFunc("yellow")
 )
 
 type Flags struct {
@@ -52,7 +59,7 @@ func Get(log *log.Logger, flags *Flags) error {
 		// Package cache directory exists, check age.
 		if s.ModTime().Add(time.Hour * cacheValidHours).Before(time.Now()) {
 			// Cache has become invalid
-			log.Info("Refreshing cache of %s", flags.Package)
+			log.Info(updating("Refreshing cache of %s"), flags.Package)
 			goGetNeeded = true
 			if err := os.RemoveAll(cachedir); err != nil {
 				return err
@@ -78,7 +85,7 @@ func Get(log *log.Logger, flags *Flags) error {
 	if err := os.MkdirAll(gopathDir, 0777); err != nil {
 		return err
 	}
-	if err := util.ExecPrintError(log, "rsync", "-a", filepath.Join(cachedir, srcDir), gopathDir); err != nil {
+	if err := util.ExecPrintError(nil, "rsync", "-a", filepath.Join(cachedir, srcDir), gopathDir); err != nil {
 		return err
 	}
 
