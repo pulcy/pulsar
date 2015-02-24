@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	cacheDir        = "~/devtool-go-cache"
+	cacheDir        = "~/devtool-cache"
 	srcDir          = "src"
 	cacheValidHours = 12
 )
@@ -93,6 +93,6 @@ func runGoGet(log *log.Logger, pkg, gopath string) error {
 	if err := os.Setenv("GOPATH", gopath); err != nil {
 		return err
 	}
-	log.Info("GOPATH=%s", gopath)
+	//log.Info("GOPATH=%s", gopath)
 	return util.ExecPrintError(log, "go", "get", pkg)
 }

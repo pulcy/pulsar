@@ -1,15 +1,20 @@
 package get
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"os"
 	"path/filepath"
 
+	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
 
 	"arvika.subliminl.com/developers/devtool/git"
+	"arvika.subliminl.com/developers/devtool/util"
 )
 
 const (
+	cacheDir         = "~/devtool-cache"
 	defaultGetBranch = "master"
 )
 
@@ -21,8 +26,18 @@ type Flags struct {
 
 // Get ensures that flags.Folder contains an up to date copy of flags.RepoUrl checked out to flags.Version.
 func Get(log *log.Logger, flags *Flags) error {
+	// Get cache folder
+	cachedirRoot, err := homedir.Expand(cacheDir)
+	if err != nil {
+		return err
+	}
+
+	// Create hash of package
+	hashBytes := sha1.Sum([]byte(flags.RepoUrl))
+	hash := fmt.Sprintf("%x", hashBytes)
+	cachedir := filepath.Join(cachedirRoot, hash)
+
 	// Expand folder
-	var err error
 	flags.Folder, err = filepath.Abs(flags.Folder)
 	if err != nil {
 		return err
@@ -35,11 +50,23 @@ func Get(log *log.Logger, flags *Flags) error {
 	_, err = os.Stat(flags.Folder)
 	cloned := false
 	if os.IsNotExist(err) {
-		// Clone repo into folder
-		if err := git.Clone(log, flags.RepoUrl, flags.Folder); err != nil {
+		if _, err := os.Stat(cachedir); os.IsNotExist(err) {
+			// Clone repo into cachedir
+			if err := os.MkdirAll(cachedir, 0777); err != nil {
+				return err
+			}
+			if err := git.Clone(log, flags.RepoUrl, cachedir); err != nil {
+				return err
+			}
+			cloned = true
+		}
+		// Sync into target folder
+		if err := os.MkdirAll(flags.Folder, 0777); err != nil {
 			return err
 		}
-		cloned = true
+		if err := util.ExecPrintError(log, "rsync", "-a", appendDirSep(cachedir), appendDirSep(flags.Folder)); err != nil {
+			return err
+		}
 	}
 	// Change dir to folder
 	if err := os.Chdir(flags.Folder); err != nil {
@@ -112,4 +139,14 @@ func makeRel(wd, path string) string {
 		return path
 	}
 	return rel
+}
+
+func appendDirSep(dir string) string {
+	if dir == "" {
+		return dir
+	}
+	if dir[len(dir)-1:] != "/" {
+		return dir + "/"
+	}
+	return dir
 }
