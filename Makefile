@@ -43,6 +43,7 @@ clean:
 	git clone git@github.com:Subliminl/go-gitlab-client.git $(GOBUILDDIR)/src/github.com/subliminl/go-gitlab-client
 	git clone git@github.com:Subliminl/go-homedir.git $(GOBUILDDIR)/src/github.com/mitchellh/go-homedir
 	GOPATH=$(GOPATH) go get github.com/coreos/go-semver/semver
+	GOPATH=$(GOPATH) go get github.com/mgutz/ansi
 
 $(BIN): .gobuild $(SOURCES) 
 	docker run \

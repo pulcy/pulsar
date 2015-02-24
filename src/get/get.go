@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mgutz/ansi"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
 
@@ -16,6 +17,12 @@ import (
 const (
 	cacheDir         = "~/devtool-cache"
 	defaultGetBranch = "master"
+)
+
+var (
+	allGood   = ansi.ColorFunc("")
+	updating  = ansi.ColorFunc("cyan")
+	attention = ansi.ColorFunc("yellow")
 )
 
 type Flags struct {
@@ -64,7 +71,7 @@ func Get(log *log.Logger, flags *Flags) error {
 		if err := os.MkdirAll(flags.Folder, 0777); err != nil {
 			return err
 		}
-		if err := util.ExecPrintError(log, "rsync", "-a", appendDirSep(cachedir), appendDirSep(flags.Folder)); err != nil {
+		if err := util.ExecPrintError(nil, "rsync", "-a", appendDirSep(cachedir), appendDirSep(flags.Folder)); err != nil {
 			return err
 		}
 	}
@@ -89,7 +96,7 @@ func Get(log *log.Logger, flags *Flags) error {
 					return err
 				}
 			} else {
-				log.Info("%s is up to date\n", makeRel(wd, flags.Folder))
+				log.Info(allGood("%s is up to date\n"), makeRel(wd, flags.Folder))
 			}
 		}
 	} else {
@@ -101,9 +108,9 @@ func Get(log *log.Logger, flags *Flags) error {
 		if localVersion != flags.Version {
 			// Checkout requested version
 			if cloned {
-				log.Info("Checking out version %s in %s.\n", flags.Version, makeRel(wd, flags.Folder))
+				log.Info(updating("Checking out version %s in %s.\n"), flags.Version, makeRel(wd, flags.Folder))
 			} else {
-				log.Info("Found version %s, wanted %s. Updating %s now.\n", localVersion, flags.Version, makeRel(wd, flags.Folder))
+				log.Info(updating("Found version %s, wanted %s. Updating %s now.\n"), localVersion, flags.Version, makeRel(wd, flags.Folder))
 			}
 			// Fetch latest changes
 			if err := git.Fetch(log, "origin"); err != nil {
@@ -117,7 +124,7 @@ func Get(log *log.Logger, flags *Flags) error {
 				return err
 			}
 		} else {
-			log.Info("Found correct version. No changes needed in %s\n", makeRel(wd, flags.Folder))
+			log.Info(allGood("Found correct version. No changes needed in %s\n"), makeRel(wd, flags.Folder))
 		}
 		// Get latest remote version
 		remoteVersion, err := git.GetLatestRemoteTag(nil, flags.RepoUrl)
@@ -125,7 +132,7 @@ func Get(log *log.Logger, flags *Flags) error {
 			return err
 		}
 		if remoteVersion != flags.Version {
-			log.Warning("Update available for %s: '%s' => '%s'\n", makeRel(wd, flags.Folder), flags.Version, remoteVersion)
+			log.Warning(attention("Update available for %s: '%s' => '%s'\n"), makeRel(wd, flags.Folder), flags.Version, remoteVersion)
 		}
 	}
 	return nil
