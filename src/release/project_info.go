@@ -13,13 +13,15 @@ type ProjectInfo struct {
 	Version string
 	pkg     map[string]interface{}
 	Image   string
+	NoGrunt bool // If set, grunt won't be called even if there is a Gruntfile.js
 	Targets struct {
 		CleanTarget string
 	}
 }
 
 type ProjectSettings struct {
-	Image   string `json:"image"` // Docker image name
+	Image   string `json:"image"`    // Docker image name
+	NoGrunt bool   `json:"no-grunt"` // If set, grunt won't be called even if there is a Gruntfile.js
 	Targets struct {
 		CleanTarget string `json:"clean"`
 	} `json:"targets"`
@@ -62,6 +64,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 
 	// Read project settings (if any)
 	image := project
+	noGrunt := false
 	settings, err := readProjectSettings()
 	if err != nil {
 		return nil, err
@@ -70,11 +73,13 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		if settings.Image != "" {
 			image = settings.Image
 		}
+		noGrunt = settings.NoGrunt
 	}
 
 	result := &ProjectInfo{
 		Name:    project,
 		Image:   image,
+		NoGrunt: noGrunt,
 		Version: oldVersion,
 		pkg:     pkg,
 	}
