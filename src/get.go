@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"arvika.subliminl.com/developers/devtool/get"
+	"arvika.pulcy.com/developers/devtool/get"
 )
 
 var (

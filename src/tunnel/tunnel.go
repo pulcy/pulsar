@@ -7,13 +7,13 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/devtool/util"
+	"arvika.pulcy.com/developers/devtool/util"
 )
 
 const (
-	registryTunnelSocket = "${HOME}/.ssh-tunnel-subliminl-registry"
+	registryTunnelSocket = "${HOME}/.ssh-pulcy-subliminl-registry"
 	registryHost         = "arvika.subliminl.com"
-	mongoTunnelSocket    = "${HOME}/.ssh-tunnel-mongo1-admin"
+	mongoTunnelSocket    = "${HOME}/.ssh-pulcy-mongo1-admin"
 	mongoHost            = "mongo1.subliminl.com"
 )
 

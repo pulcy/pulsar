@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"arvika.subliminl.com/developers/devtool/docker"
+	"arvika.pulcy.com/developers/devtool/docker"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"github.com/coreos/go-semver/semver"
 	"github.com/spf13/cobra"
 
-	"arvika.subliminl.com/developers/devtool/release"
+	"arvika.pulcy.com/developers/devtool/release"
 )
 
 var (

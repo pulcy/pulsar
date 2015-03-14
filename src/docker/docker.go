@@ -5,7 +5,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/devtool/util"
+	"arvika.pulcy.com/developers/devtool/util"
 )
 
 // Push a docker image to the arvika-ssh registry

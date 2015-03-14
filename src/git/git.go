@@ -8,7 +8,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.subliminl.com/developers/devtool/util"
+	"arvika.pulcy.com/developers/devtool/util"
 )
 
 const (

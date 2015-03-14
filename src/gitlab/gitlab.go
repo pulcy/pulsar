@@ -11,11 +11,11 @@ import (
 	"github.com/juju/errgo"
 	"github.com/subliminl/go-gitlab-client"
 
-	"arvika.subliminl.com/developers/devtool/git"
+	"arvika.pulcy.com/developers/devtool/git"
 )
 
 const (
-	configFile = ".subliminl/gitlab"
+	configFile = ".pulcy/gitlab"
 )
 
 var (
@@ -73,6 +73,9 @@ func CloneProjects(config *Config) error {
 	}
 	for _, p := range projects {
 		if p.Archived {
+			continue
+		}
+		if p.Owner == nil || p.Owner.Name != "pulcy" {
 			continue
 		}
 		if _, err := os.Stat(p.Name); err == nil {
