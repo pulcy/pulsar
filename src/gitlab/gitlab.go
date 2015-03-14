@@ -75,7 +75,7 @@ func CloneProjects(config *Config) error {
 		if p.Archived {
 			continue
 		}
-		if p.Owner == nil || p.Owner.Name != "pulcy" {
+		if p.Namespace == nil || p.Namespace.Name != "pulcy" {
 			continue
 		}
 		if _, err := os.Stat(p.Name); err == nil {
