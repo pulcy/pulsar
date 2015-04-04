@@ -36,7 +36,7 @@ func runDockerTag(cmd *cobra.Command, args []string) {
 		tag = "latest"
 	}
 	if dockerTagImage == "" {
-		dockerTagImage = info.Name
+		dockerTagImage = info.Image
 	}
 	Printf("%s:%s", dockerTagImage, tag)
 }
