@@ -46,15 +46,7 @@ clean:
 	GOPATH=$(GOPATH) go get github.com/mgutz/ansi
 
 $(BIN): .gobuild $(SOURCES) 
-	docker run \
-	    --rm \
-	    -v $(SCRIPTDIR):/usr/code \
-	    -e GOPATH=/usr/code/.gobuild \
-	    -e GOOS=$(GOOS) \
-	    -e GOARCH=$(GOARCH) \
-	    -w /usr/code/src \
-	    golang:1.3.1-cross \
-	    go build -a -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o ../$(PROJECT)
+	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o ../$(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler
