@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	registryTunnelSocket = "${HOME}/.ssh-pulcy-subliminl-registry"
-	registryHost         = "arvika.subliminl.com"
+	registryTunnelSocket = "${HOME}/.ssh-pulcy-registry"
+	registryHost         = "arvika.pulcy.com"
 	mongoTunnelSocket    = "${HOME}/.ssh-pulcy-mongo1-admin"
 	mongoHost            = "mongo1.subliminl.com"
 )
