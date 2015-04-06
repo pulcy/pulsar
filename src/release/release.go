@@ -127,9 +127,13 @@ func Release(log *log.Logger, flags *Flags) error {
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
 			return err
 		}
-		if flags.DockerRegistry != "" {
+		registry := flags.DockerRegistry
+		if info.Registry != "" {
+			registry = info.Registry
+		}
+		if registry != "" {
 			// Push image to registry
-			if err := docker.Push(log, tag, flags.DockerRegistry); err != nil {
+			if err := docker.Push(log, tag, registry); err != nil {
 				return err
 			}
 		}
