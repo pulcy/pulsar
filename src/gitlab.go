@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultGitlabHost           = "https://arvika.subliminl.com"
+	defaultGitlabHost           = "https://arvika.pulcy.com"
 	defaultGitlabApiPath        = "/api/v3"
 	defaultGitlabPrTargetBranch = "master"
 )
