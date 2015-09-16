@@ -1,7 +1,7 @@
 PROJECT := devtool
 SCRIPTDIR := $(shell pwd)
 VERSION:= $(shell cat VERSION)
-COMMIT := $(shell git rev-parse HEAD | cut -c1-8)
+COMMIT := $(shell git rev-parse --short HEAD)
 
 GOBUILDDIR := $(SCRIPTDIR)/.gobuild
 SRCDIR := $(SCRIPTDIR)/src
@@ -36,17 +36,21 @@ clean:
 .gobuild: 
 	mkdir -p $(ORGDIR)
 	rm -f $(REPODIR) && ln -s ../../../../src $(REPODIR)
-	git clone git@github.com:Subliminl/errgo.git $(GOBUILDDIR)/src/github.com/juju/errgo
-	git clone git@github.com:Subliminl/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
-	git clone git@github.com:Subliminl/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
-	git clone git@github.com:Subliminl/cobra.git $(GOBUILDDIR)/src/github.com/spf13/cobra
-	git clone git@github.com:Subliminl/go-gitlab-client.git $(GOBUILDDIR)/src/github.com/subliminl/go-gitlab-client
-	git clone git@github.com:Subliminl/go-homedir.git $(GOBUILDDIR)/src/github.com/mitchellh/go-homedir
+	git clone git@github.com:juju/errgo.git $(GOBUILDDIR)/src/github.com/juju/errgo
+	git clone git@github.com:op/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
+	git clone git@github.com:spf13/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
+	git clone git@github.com:spf13/cobra.git $(GOBUILDDIR)/src/github.com/spf13/cobra
+	git clone git@github.com:inconshreveable/mousetrap.git $(GOBUILDDIR)/src/github.com/inconshreveable/mousetrap
+	git clone git@github.com:cpuguy83/go-md2man.git $(GOBUILDDIR)/src/github.com/cpuguy83/go-md2man
+	git clone git@github.com:russross/blackfriday.git $(GOBUILDDIR)/src/github.com/russross/blackfriday
+	git clone git@github.com:shurcooL/sanitized_anchor_name.git $(GOBUILDDIR)/src/github.com/shurcooL/sanitized_anchor_name
+	git clone git@github.com:ewoutp/go-gitlab-client.git $(GOBUILDDIR)/src/github.com/ewoutp/go-gitlab-client
+	git clone git@github.com:mitchellh/go-homedir.git $(GOBUILDDIR)/src/github.com/mitchellh/go-homedir
 	GOPATH=$(GOPATH) go get github.com/coreos/go-semver/semver
 	GOPATH=$(GOPATH) go get github.com/mgutz/ansi
 
 $(BIN): .gobuild $(SOURCES) 
-	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o ../$(PROJECT)
+	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o ../$(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler

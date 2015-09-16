@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/ewoutp/go-gitlab-client"
 	"github.com/juju/errgo"
-	"github.com/subliminl/go-gitlab-client"
 
 	"arvika.pulcy.com/developers/devtool/git"
 )
