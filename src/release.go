@@ -38,6 +38,11 @@ func init() {
 		Short: "Create a patch",
 		Run:   runRelease,
 	})
+	releaseCmd.AddCommand(&cobra.Command{
+		Use:   "dev",
+		Short: "Create a dev release",
+		Run:   runRelease,
+	})
 }
 
 func runRelease(cmd *cobra.Command, args []string) {

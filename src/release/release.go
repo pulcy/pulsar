@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/juju/errgo"
@@ -38,6 +39,7 @@ type packageJson map[string]interface{}
 func Release(log *log.Logger, flags *Flags) error {
 	// Detect environment
 	hasMakefile := false
+	isDev := flags.ReleaseType == "dev"
 	if _, err := os.Stat(makefileFile); err == nil {
 		hasMakefile = true
 		log.Info("Found %s", makefileFile)
@@ -68,8 +70,10 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 
 	// Check repository state
-	if err := checkRepoClean(log); err != nil {
-		return err
+	if !isDev {
+		if err := checkRepoClean(log); err != nil {
+			return err
+		}
 	}
 
 	// Bump version
@@ -83,14 +87,18 @@ func Release(log *log.Logger, flags *Flags) error {
 		version.Patch = 0
 	case "patch":
 		version.Patch++
+	case "dev":
+		// Do not change version
 	default:
 		return errgo.Newf("Unknown release type %s", flags.ReleaseType)
 	}
 	version.Metadata = ""
 
 	// Write new release version
-	if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
-		return err
+	if !isDev {
+		if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
+			return err
+		}
 	}
 
 	// Open SSH tunnel
@@ -112,8 +120,10 @@ func Release(log *log.Logger, flags *Flags) error {
 	}
 	if hasMakefile {
 		// Clean first
-		if err := util.ExecPrintError(log, "make", info.Targets.CleanTarget); err != nil {
-			return err
+		if !isDev {
+			if err := util.ExecPrintError(log, "make", info.Targets.CleanTarget); err != nil {
+				return err
+			}
 		}
 		// Now build
 		if err := util.ExecPrintError(log, "make"); err != nil {
@@ -123,48 +133,50 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	if hasDockerfile {
 		// Build docker images
-		tag := fmt.Sprintf("%s:%s", info.Image, version.String())
+		tagVersion := version.String()
+		if isDev {
+			tagVersion = time.Now().Format("2006-01-02-15-04-05")
+		}
+		tag := fmt.Sprintf("%s:%s", info.Image, tagVersion)
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
 			return err
 		}
-		registry := flags.DockerRegistry
-		if info.Registry != "" {
-			registry = info.Registry
-		}
-		if registry != "" {
+		if flags.DockerRegistry != "" {
 			// Push image to registry
-			if err := docker.Push(log, tag, registry); err != nil {
+			if err := docker.Push(log, tag, flags.DockerRegistry); err != nil {
 				return err
 			}
 		}
 	}
 
 	// Build succeeded, re-write new release version and commit
-	if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
-		return err
-	}
+	if !isDev {
+		if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
+			return err
+		}
 
-	// Tag version
-	if err := git.Tag(log, version.String()); err != nil {
-		return err
-	}
+		// Tag version
+		if err := git.Tag(log, version.String()); err != nil {
+			return err
+		}
 
-	// Update version to "+git" working version
-	version.Metadata = "git"
+		// Update version to "+git" working version
+		version.Metadata = "git"
 
-	// Write new release version
-	if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
-		return err
-	}
+		// Write new release version
+		if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
+			return err
+		}
 
-	// Push changes
-	if err := git.Push(log, "", false); err != nil {
-		return err
-	}
+		// Push changes
+		if err := git.Push(log, "", false); err != nil {
+			return err
+		}
 
-	// Push tags
-	if err := git.Push(log, "", true); err != nil {
-		return err
+		// Push tags
+		if err := git.Push(log, "", true); err != nil {
+			return err
+		}
 	}
 
 	return nil
