@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"arvika.pulcy.com/developers/devtool/tunnel"
+	"arvika.pulcy.com/pulcy/pulcy/tunnel"
 )
 
 var (
