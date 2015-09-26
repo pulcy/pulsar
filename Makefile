@@ -1,4 +1,4 @@
-PROJECT := devtool
+PROJECT := pulcy
 SCRIPTDIR := $(shell pwd)
 VERSION:= $(shell cat VERSION)
 COMMIT := $(shell git rev-parse --short HEAD)
@@ -7,7 +7,7 @@ GOBUILDDIR := $(SCRIPTDIR)/.gobuild
 SRCDIR := $(SCRIPTDIR)/src
 BINDIR := $(SCRIPTDIR)
 
-ORGPATH := arvika.pulcy.com/developers
+ORGPATH := arvika.pulcy.com/pulcy
 ORGDIR := $(GOBUILDDIR)/src/$(ORGPATH)
 REPONAME := $(PROJECT)
 REPODIR := $(ORGDIR)/$(REPONAME)

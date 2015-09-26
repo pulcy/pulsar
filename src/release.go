@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"arvika.pulcy.com/developers/devtool/release"
+	"arvika.pulcy.com/pulcy/pulcy/release"
 )
 
 const (

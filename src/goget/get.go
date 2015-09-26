@@ -13,7 +13,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/developers/devtool/util"
+	"arvika.pulcy.com/pulcy/pulcy/util"
 )
 
 const (

@@ -10,13 +10,13 @@ import (
 
 var (
 	projectVersion = "dev"
-	projectName    = "devtool"
+	projectName    = "pulcy"
 	projectBuild   = "dev"
 	log            = logPkg.MustGetLogger(projectName)
 
 	mainCmd = &cobra.Command{
 		Use:   projectName,
-		Short: "Devtool is a helper for development environments",
+		Short: "Pulcy is a helper for development environments",
 		Run:   UsageFunc,
 	}
 )

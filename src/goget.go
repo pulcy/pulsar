@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	goget "arvika.pulcy.com/developers/devtool/goget"
+	goget "arvika.pulcy.com/pulcy/pulcy/goget"
 )
 
 var (
