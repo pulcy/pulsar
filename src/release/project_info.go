@@ -30,7 +30,7 @@ type ProjectSettings struct {
 }
 
 const (
-	projectSettingsFile = ".devtool"
+	projectSettingsFile = ".pulcy"
 )
 
 func GetProjectInfo() (*ProjectInfo, error) {
