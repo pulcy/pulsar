@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultDockerRegistry = "arvika-ssh:5000"
+	defaultDockerRegistry = "registry.pulcy.com"
 )
 
 var (
