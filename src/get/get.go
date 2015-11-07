@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/juju/errgo"
 	"github.com/mgutz/ansi"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
@@ -20,6 +21,7 @@ const (
 )
 
 var (
+	maskAny   = errgo.MaskFunc(errgo.Any)
 	allGood   = ansi.ColorFunc("")
 	updating  = ansi.ColorFunc("cyan")
 	attention = ansi.ColorFunc("yellow")
@@ -36,7 +38,7 @@ func Get(log *log.Logger, flags *Flags) error {
 	// Get cache folder
 	cachedirRoot, err := homedir.Expand(cacheDir)
 	if err != nil {
-		return err
+		return maskAny(err)
 	}
 
 	// Create hash of package
@@ -47,7 +49,7 @@ func Get(log *log.Logger, flags *Flags) error {
 	// Expand folder
 	flags.Folder, err = filepath.Abs(flags.Folder)
 	if err != nil {
-		return err
+		return maskAny(err)
 	}
 
 	// Get current folder
@@ -60,24 +62,24 @@ func Get(log *log.Logger, flags *Flags) error {
 		if _, err := os.Stat(cachedir); os.IsNotExist(err) {
 			// Clone repo into cachedir
 			if err := os.MkdirAll(cachedir, 0777); err != nil {
-				return err
+				return maskAny(err)
 			}
 			if err := git.Clone(log, flags.RepoUrl, cachedir); err != nil {
-				return err
+				return maskAny(err)
 			}
 			cloned = true
 		}
 		// Sync into target folder
 		if err := os.MkdirAll(flags.Folder, 0777); err != nil {
-			return err
+			return maskAny(err)
 		}
 		if err := util.ExecPrintError(nil, "rsync", "-a", appendDirSep(cachedir), appendDirSep(flags.Folder)); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 	// Change dir to folder
 	if err := os.Chdir(flags.Folder); err != nil {
-		return err
+		return maskAny(err)
 	}
 	// Specific version needed?
 	if flags.Version == "" {
@@ -85,15 +87,15 @@ func Get(log *log.Logger, flags *Flags) error {
 		if !cloned {
 			localCommit, err := git.GetLatestLocalCommit(nil, flags.Folder, defaultGetBranch)
 			if err != nil {
-				return err
+				return maskAny(err)
 			}
 			remoteCommit, err := git.GetLatestRemoteCommit(nil, flags.RepoUrl, defaultGetBranch)
 			if err != nil {
-				return err
+				return maskAny(err)
 			}
 			if localCommit != remoteCommit {
 				if err := git.Pull(log, "origin"); err != nil {
-					return err
+					return maskAny(err)
 				}
 			} else {
 				log.Info(allGood("%s is up to date\n"), makeRel(wd, flags.Folder))
@@ -103,7 +105,7 @@ func Get(log *log.Logger, flags *Flags) error {
 		// Get latest (local) version
 		localVersion, err := git.GetLatestTag(nil, flags.Folder)
 		if err != nil {
-			return err
+			return maskAny(err)
 		}
 		if localVersion != flags.Version {
 			// Checkout requested version
@@ -114,14 +116,14 @@ func Get(log *log.Logger, flags *Flags) error {
 			}
 			// Fetch latest changes
 			if err := git.Fetch(log, "origin"); err != nil {
-				return err
+				return maskAny(err)
 			}
 			if err := git.FetchTags(log, "origin"); err != nil {
-				return err
+				return maskAny(err)
 			}
 			// Checkout intended version
 			if err := git.Checkout(log, flags.Version); err != nil {
-				return err
+				return maskAny(err)
 			}
 		} else {
 			log.Info(allGood("Found correct version. No changes needed in %s\n"), makeRel(wd, flags.Folder))
@@ -129,7 +131,7 @@ func Get(log *log.Logger, flags *Flags) error {
 		// Get latest remote version
 		remoteVersion, err := git.GetLatestRemoteTag(nil, flags.RepoUrl)
 		if err != nil {
-			return err
+			return maskAny(err)
 		}
 		if remoteVersion != flags.Version {
 			log.Warning(attention("Update available for %s: '%s' => '%s'\n"), makeRel(wd, flags.Folder), flags.Version, remoteVersion)

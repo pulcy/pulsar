@@ -6,9 +6,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
 	"arvika.pulcy.com/pulcy/pulcy/util"
+)
+
+var (
+	maskAny = errgo.MaskFunc(errgo.Any)
 )
 
 const (
@@ -20,15 +25,14 @@ const (
 func Add(log *log.Logger, files ...string) error {
 	args := []string{"add"}
 	args = append(args, files...)
-	return util.ExecPrintError(log, cmdName, args...)
-	return nil
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git commit`
 func Commit(log *log.Logger, message string) error {
 	if msg, err := util.Exec(log, cmdName, "commit", "-m", message); err != nil {
 		fmt.Printf("%s\n", msg)
-		return err
+		return maskAny(err)
 	}
 	return nil
 }
@@ -45,7 +49,7 @@ func Status(log *log.Logger, porcelain bool) (string, error) {
 		} else {
 			fmt.Printf("%s\n", msg)
 		}
-		return "", err
+		return "", maskAny(err)
 	} else {
 		return strings.TrimSpace(msg), nil
 	}
@@ -63,7 +67,7 @@ func Diff(log *log.Logger, a, b string) (string, error) {
 		} else {
 			fmt.Printf("%s\n", msg)
 		}
-		return "", err
+		return "", maskAny(err)
 	} else {
 		return strings.TrimSpace(msg), nil
 	}
@@ -80,7 +84,7 @@ func Push(log *log.Logger, remote string, tags bool) error {
 	if remote != "" {
 		args = append(args, remote)
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git pull`
@@ -91,7 +95,7 @@ func Pull(log *log.Logger, remote string) error {
 	if remote != "" {
 		args = append(args, remote)
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git tag <tag>`
@@ -100,7 +104,7 @@ func Tag(log *log.Logger, tag string) error {
 		"tag",
 		tag,
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git fetch <remote>`
@@ -109,7 +113,7 @@ func Fetch(log *log.Logger, remote string) error {
 		"fetch",
 		remote,
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git fetch --tags <remote>`
@@ -119,7 +123,7 @@ func FetchTags(log *log.Logger, remote string) error {
 		"--tags",
 		remote,
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Execute a `git clone <repo-url> <folder>`
@@ -129,7 +133,7 @@ func Clone(log *log.Logger, repoUrl, folder string) error {
 		repoUrl,
 		folder,
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Gets the latest tag from the repo in given folder.
@@ -142,8 +146,10 @@ func GetLatestTag(log *log.Logger, folder string) (string, error) {
 	cmd := util.PrepareCommand(log, cmdName, args...)
 	cmd.SetDir(folder)
 	output, err := cmd.Run()
-	if err != nil {
-		return "", err
+	if util.IsExit(err) {
+		return "", nil
+	} else if err != nil {
+		return "", maskAny(err)
 	}
 	return strings.TrimSpace(output), nil
 }
@@ -154,7 +160,7 @@ func Checkout(log *log.Logger, branch string) error {
 		"checkout",
 		branch,
 	}
-	return util.ExecPrintError(log, cmdName, args...)
+	return maskAny(util.ExecPrintError(log, cmdName, args...))
 }
 
 // Gets the tags from the given remote git repo.
@@ -166,7 +172,7 @@ func GetRemoteTags(log *log.Logger, repoUrl string) (TagList, error) {
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return []string{}, err
+		return []string{}, maskAny(err)
 	}
 	tags := TagList{}
 	scanner := bufio.NewScanner(strings.NewReader(output))
@@ -180,7 +186,7 @@ func GetRemoteTags(log *log.Logger, repoUrl string) (TagList, error) {
 		tags = append(tags, tag)
 	}
 	if err := scanner.Err(); err != nil {
-		return tags, err
+		return tags, maskAny(err)
 	}
 
 	// Sort tags from high to low
@@ -193,7 +199,7 @@ func GetRemoteTags(log *log.Logger, repoUrl string) (TagList, error) {
 func GetLatestRemoteTag(log *log.Logger, repoUrl string) (string, error) {
 	tags, err := GetRemoteTags(log, repoUrl)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	if len(tags) > 0 {
 		return tags[0], nil
@@ -212,7 +218,7 @@ func GetLatestLocalCommit(log *log.Logger, folder, branch string) (string, error
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	return strings.TrimSpace(output), nil
 }
@@ -228,7 +234,7 @@ func GetLatestRemoteCommit(log *log.Logger, repoUrl, branch string) (string, err
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	parts := strings.Split(output, "\t")
 	return parts[0], nil
@@ -243,7 +249,7 @@ func GetLocalBranchName(log *log.Logger) (string, error) {
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	return strings.TrimSpace(output), nil
 }
@@ -257,7 +263,7 @@ func GetConfig(log *log.Logger, key string) (string, error) {
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	return strings.TrimSpace(output), nil
 }
@@ -275,7 +281,7 @@ func GetMergeBase(log *log.Logger) (string, error) {
 	}
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
-		return "", err
+		return "", maskAny(err)
 	}
 	return strings.TrimSpace(output), nil
 }

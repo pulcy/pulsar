@@ -6,7 +6,12 @@ import (
 	"io"
 	"os/exec"
 
+	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
+)
+
+var (
+	maskAny = errgo.MaskFunc(errgo.Any)
 )
 
 type Command struct {
@@ -61,10 +66,15 @@ func (c *Command) SetDir(dir string) {
 func (c *Command) Run() (string, error) {
 	err := c.cmd.Run()
 	if err != nil {
-		return c.stderr.String(), err
+		return c.stderr.String(), maskAny(err)
 	} else {
 		return c.stdout.String(), nil
 	}
+}
+
+func IsExit(err error) bool {
+	_, ok := errgo.Cause(err).(*exec.ExitError)
+	return ok
 }
 
 // Execute a given command, printing stderr in case of an error
