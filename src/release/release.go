@@ -143,7 +143,7 @@ func Release(log *log.Logger, flags *Flags) error {
 			return err
 		}
 		if info.TagLatest {
-			if err := util.ExecPrintError(log, "docker", "tag", tag, latestTag); err != nil {
+			if err := util.ExecPrintError(log, "docker", "tag", "-f", tag, latestTag); err != nil {
 				return err
 			}
 		}
