@@ -9,22 +9,24 @@ import (
 )
 
 type ProjectInfo struct {
-	Name     string
-	Version  string
-	pkg      map[string]interface{}
-	Image    string
-	Registry string
-	NoGrunt  bool // If set, grunt won't be called even if there is a Gruntfile.js
-	Targets  struct {
+	Name      string
+	Version   string
+	pkg       map[string]interface{}
+	Image     string
+	Registry  string
+	NoGrunt   bool // If set, grunt won't be called even if there is a Gruntfile.js
+	TagLatest bool `json:"tag-latest"` // If set, a latest tag will be set of the docker image
+	Targets   struct {
 		CleanTarget string
 	}
 }
 
 type ProjectSettings struct {
-	Image    string `json:"image"`    // Docker image name
-	Registry string `json:"registry"` // Docker registry prefix
-	NoGrunt  bool   `json:"no-grunt"` // If set, grunt won't be called even if there is a Gruntfile.js
-	Targets  struct {
+	Image     string `json:"image"`      // Docker image name
+	Registry  string `json:"registry"`   // Docker registry prefix
+	NoGrunt   bool   `json:"no-grunt"`   // If set, grunt won't be called even if there is a Gruntfile.js
+	TagLatest bool   `json:"tag-latest"` // If set, a latest tag will be set of the docker image
+	Targets   struct {
 		CleanTarget string `json:"clean"`
 	} `json:"targets"`
 }
@@ -68,6 +70,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	image := project
 	registry := ""
 	noGrunt := false
+	tagLatest := false
 	settings, err := readProjectSettings()
 	if err != nil {
 		return nil, err
@@ -80,15 +83,17 @@ func GetProjectInfo() (*ProjectInfo, error) {
 			registry = settings.Registry
 		}
 		noGrunt = settings.NoGrunt
+		tagLatest = settings.TagLatest
 	}
 
 	result := &ProjectInfo{
-		Name:     project,
-		Image:    image,
-		Registry: registry,
-		NoGrunt:  noGrunt,
-		Version:  oldVersion,
-		pkg:      pkg,
+		Name:      project,
+		Image:     image,
+		Registry:  registry,
+		NoGrunt:   noGrunt,
+		TagLatest: tagLatest,
+		Version:   oldVersion,
+		pkg:       pkg,
 	}
 	result.Targets.CleanTarget = "clean"
 	if settings != nil && settings.Targets.CleanTarget != "" {

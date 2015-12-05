@@ -138,8 +138,14 @@ func Release(log *log.Logger, flags *Flags) error {
 			tagVersion = time.Now().Format("2006-01-02-15-04-05")
 		}
 		tag := fmt.Sprintf("%s:%s", info.Image, tagVersion)
+		latestTag := fmt.Sprintf("%s:latest", info.Image)
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
 			return err
+		}
+		if info.TagLatest {
+			if err := util.ExecPrintError(log, "docker", "tag", tag, latestTag); err != nil {
+				return err
+			}
 		}
 		registry := flags.DockerRegistry
 		if info.Registry != "" {
@@ -149,6 +155,12 @@ func Release(log *log.Logger, flags *Flags) error {
 			// Push image to registry
 			if err := docker.Push(log, tag, registry); err != nil {
 				return err
+			}
+			if info.TagLatest {
+				// Push latest image to registry
+				if err := docker.Push(log, latestTag, registry); err != nil {
+					return err
+				}
 			}
 		}
 	}
