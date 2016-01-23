@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	cacheDir = "~/pulcy-cache"
+	cacheDir = "~/cache/pulcy"
 )
 
 var (
