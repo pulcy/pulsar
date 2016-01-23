@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"arvika.pulcy.com/pulcy/pulcy/tunnel"
+	"git.pulcy.com/pulcy/pulcy/tunnel"
 )
 
 var (

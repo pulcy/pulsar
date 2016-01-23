@@ -11,10 +11,10 @@ import (
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/pulcy/pulcy/docker"
-	"arvika.pulcy.com/pulcy/pulcy/git"
-	"arvika.pulcy.com/pulcy/pulcy/tunnel"
-	"arvika.pulcy.com/pulcy/pulcy/util"
+	"git.pulcy.com/pulcy/pulcy/docker"
+	"git.pulcy.com/pulcy/pulcy/git"
+	"git.pulcy.com/pulcy/pulcy/tunnel"
+	"git.pulcy.com/pulcy/pulcy/util"
 )
 
 const (

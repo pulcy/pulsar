@@ -1,9 +1,12 @@
 package main
 
 import (
+	"os"
+	"sync"
+
 	"github.com/spf13/cobra"
 
-	goget "arvika.pulcy.com/pulcy/pulcy/goget"
+	goget "git.pulcy.com/pulcy/pulcy/goget"
 )
 
 var (
@@ -12,8 +15,7 @@ var (
 		Short: "Execute `go get` with cache support",
 		Run:   UsageFunc,
 	}
-	gogetFlags = &goget.Flags{}
-	gogetCmd   = &cobra.Command{
+	gogetCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Execute `go get` with cache support",
 		Run:   runGoGet,
@@ -26,13 +28,30 @@ func init() {
 }
 
 func runGoGet(cmd *cobra.Command, args []string) {
-	switch len(args) {
-	case 1:
-		gogetFlags.Package = args[0]
-		if err := goget.Get(log, gogetFlags); err != nil {
-			Quitf("Go get failed: %v\n", err)
-		}
-	default:
+	if len(args) == 0 {
 		CommandError(cmd, "Expected <package> argument\n")
+	} else {
+		wg := sync.WaitGroup{}
+		errors := make(chan error, len(args))
+		for _, pkg := range args {
+			wg.Add(1)
+			go func(pkg string) {
+				defer wg.Done()
+				gogetFlags := &goget.Flags{Package: pkg}
+				if err := goget.Get(log, gogetFlags); err != nil {
+					errors <- err
+				}
+			}(pkg)
+		}
+		wg.Wait()
+		close(errors)
+		failed := false
+		for err := range errors {
+			Printf("Go get failed: %v\n", err)
+			failed = true
+		}
+		if failed {
+			os.Exit(1)
+		}
 	}
 }

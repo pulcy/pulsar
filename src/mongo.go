@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"arvika.pulcy.com/pulcy/pulcy/mongo"
+	"git.pulcy.com/pulcy/pulcy/mongo"
 )
 
 const (

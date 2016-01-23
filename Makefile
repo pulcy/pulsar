@@ -7,7 +7,7 @@ GOBUILDDIR := $(SCRIPTDIR)/.gobuild
 SRCDIR := $(SCRIPTDIR)/src
 BINDIR := $(SCRIPTDIR)
 
-ORGPATH := arvika.pulcy.com/pulcy
+ORGPATH := git.pulcy.com/pulcy
 ORGDIR := $(GOBUILDDIR)/src/$(ORGPATH)
 REPONAME := $(PROJECT)
 REPODIR := $(ORGDIR)/$(REPONAME)
@@ -23,7 +23,7 @@ ifndef GOOS
 endif
 ifndef GOARCH
 	GOARCH := $(shell go env GOARCH)
-endif	
+endif
 
 
 .PHONY: clean test
@@ -33,7 +33,7 @@ all: $(BIN)
 clean:
 	rm -Rf $(BIN) $(GOBUILDDIR)
 
-.gobuild: 
+.gobuild:
 	mkdir -p $(ORGDIR)
 	rm -f $(REPODIR) && ln -s ../../../../src $(REPODIR)
 	git clone git@github.com:juju/errgo.git $(GOBUILDDIR)/src/github.com/juju/errgo
@@ -49,9 +49,8 @@ clean:
 	GOPATH=$(GOPATH) go get github.com/coreos/go-semver/semver
 	GOPATH=$(GOPATH) go get github.com/mgutz/ansi
 
-$(BIN): .gobuild $(SOURCES) 
+$(BIN): .gobuild $(SOURCES)
 	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o ../$(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler
-	

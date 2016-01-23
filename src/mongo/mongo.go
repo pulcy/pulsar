@@ -7,8 +7,8 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/pulcy/pulcy/tunnel"
-	"arvika.pulcy.com/pulcy/pulcy/util"
+	"git.pulcy.com/pulcy/pulcy/tunnel"
+	"git.pulcy.com/pulcy/pulcy/util"
 )
 
 // Copy the production database to local

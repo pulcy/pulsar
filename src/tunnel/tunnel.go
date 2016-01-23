@@ -7,7 +7,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/pulcy/pulcy/util"
+	"git.pulcy.com/pulcy/pulcy/util"
 )
 
 const (

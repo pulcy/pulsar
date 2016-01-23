@@ -1,22 +1,19 @@
 package get
 
 import (
-	"crypto/sha1"
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/juju/errgo"
 	"github.com/mgutz/ansi"
-	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/pulcy/pulcy/git"
-	"arvika.pulcy.com/pulcy/pulcy/util"
+	"git.pulcy.com/pulcy/pulcy/cache"
+	"git.pulcy.com/pulcy/pulcy/git"
+	"git.pulcy.com/pulcy/pulcy/util"
 )
 
 const (
-	cacheDir         = "~/devtool-cache"
 	defaultGetBranch = "master"
 )
 
@@ -35,16 +32,11 @@ type Flags struct {
 
 // Get ensures that flags.Folder contains an up to date copy of flags.RepoUrl checked out to flags.Version.
 func Get(log *log.Logger, flags *Flags) error {
-	// Get cache folder
-	cachedirRoot, err := homedir.Expand(cacheDir)
+	// Get cache dir
+	cachedir, cacheIsValid, err := cache.Dir(flags.RepoUrl, -1)
 	if err != nil {
 		return maskAny(err)
 	}
-
-	// Create hash of package
-	hashBytes := sha1.Sum([]byte(flags.RepoUrl))
-	hash := fmt.Sprintf("%x", hashBytes)
-	cachedir := filepath.Join(cachedirRoot, hash)
 
 	// Expand folder
 	flags.Folder, err = filepath.Abs(flags.Folder)
@@ -55,20 +47,19 @@ func Get(log *log.Logger, flags *Flags) error {
 	// Get current folder
 	wd, _ := os.Getwd()
 
+	// Fill cache if needed
+	cloned := false
+	if !cacheIsValid {
+		// Clone repo into cachedir
+		if err := git.Clone(log, flags.RepoUrl, cachedir); err != nil {
+			return maskAny(err)
+		}
+		cloned = true
+	}
+
 	// Make sure a clone exists
 	_, err = os.Stat(flags.Folder)
-	cloned := false
 	if os.IsNotExist(err) {
-		if _, err := os.Stat(cachedir); os.IsNotExist(err) {
-			// Clone repo into cachedir
-			if err := os.MkdirAll(cachedir, 0777); err != nil {
-				return maskAny(err)
-			}
-			if err := git.Clone(log, flags.RepoUrl, cachedir); err != nil {
-				return maskAny(err)
-			}
-			cloned = true
-		}
 		// Sync into target folder
 		if err := os.MkdirAll(flags.Folder, 0777); err != nil {
 			return maskAny(err)

@@ -5,13 +5,13 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"arvika.pulcy.com/pulcy/pulcy/util"
+	"git.pulcy.com/pulcy/pulcy/util"
 )
 
 // Push a docker image to the arvika-ssh registry
 func Push(log *log.Logger, image, dockerRegistry string) error {
 	registryTag := fmt.Sprintf("%s/%s", dockerRegistry, image)
-	if err := util.ExecPrintError(log, "docker", "tag", image, registryTag); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", "-f", image, registryTag); err != nil {
 		return err
 	}
 	// Push
@@ -32,7 +32,7 @@ func Pull(log *log.Logger, image, dockerRegistry string) error {
 	if err := util.ExecPrintError(log, "docker", "pull", registryTag); err != nil {
 		return err
 	}
-	if err := util.ExecPrintError(log, "docker", "tag", registryTag, image); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", "-f", registryTag, image); err != nil {
 		return err
 	}
 	// Remove registry tag
