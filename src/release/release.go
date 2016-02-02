@@ -13,7 +13,6 @@ import (
 
 	"git.pulcy.com/pulcy/pulcy/docker"
 	"git.pulcy.com/pulcy/pulcy/git"
-	"git.pulcy.com/pulcy/pulcy/tunnel"
 	"git.pulcy.com/pulcy/pulcy/util"
 )
 
@@ -99,11 +98,6 @@ func Release(log *log.Logger, flags *Flags) error {
 		if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
 			return err
 		}
-	}
-
-	// Open SSH tunnel
-	if err := tunnel.OpenTunnel(log); err != nil {
-		return err
 	}
 
 	// Build project
