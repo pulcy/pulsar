@@ -35,7 +35,7 @@ all: $(BIN)
 clean:
 	rm -Rf $(BIN) $(GOBUILDDIR)
 
-.gobuild:
+$(GOBUILDDIR):
 	mkdir -p $(ORGDIR)
 	rm -f $(REPODIR) && ln -s ../../../../ $(REPODIR)
 
