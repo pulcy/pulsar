@@ -33,7 +33,7 @@ type Flags struct {
 // Get ensures that flags.Folder contains an up to date copy of flags.RepoUrl checked out to flags.Version.
 func Get(log *log.Logger, flags *Flags) error {
 	// Get cache dir
-	cachedir, cacheIsValid, err := cache.Dir(flags.RepoUrl, -1)
+	cachedir, cacheIsValid, err := cache.Dir(flags.RepoUrl, 0)
 	if err != nil {
 		return maskAny(err)
 	}

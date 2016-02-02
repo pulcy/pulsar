@@ -1,0 +1,96 @@
+package main
+
+import (
+	"os"
+	"sync"
+
+	"github.com/spf13/cobra"
+
+	"git.pulcy.com/pulcy/pulcy/golang"
+)
+
+var (
+	goCmd = &cobra.Command{
+		Use:   "go",
+		Short: "Execute `go get` with cache support",
+		Run:   UsageFunc,
+	}
+	goGetCmd = &cobra.Command{
+		Use:   "get",
+		Short: "Execute `go get` with cache support",
+		Run:   runGoGet,
+	}
+	goVendorCmd = &cobra.Command{
+		Use:   "vendor",
+		Short: "Update a package in the vendor directory",
+		Run:   runGoVendor,
+	}
+
+	vendorDir string
+)
+
+func init() {
+	goVendorCmd.Flags().StringVarP(&vendorDir, "vendor-dir", "V", "./vendor", "Specify vendor directory")
+
+	mainCmd.AddCommand(goCmd)
+	goCmd.AddCommand(goGetCmd)
+	goCmd.AddCommand(goVendorCmd)
+}
+
+func runGoGet(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		CommandError(cmd, "Expected <package> argument\n")
+	} else {
+		wg := sync.WaitGroup{}
+		errors := make(chan error, len(args))
+		for _, pkg := range args {
+			wg.Add(1)
+			go func(pkg string) {
+				defer wg.Done()
+				gogetFlags := &golang.GetFlags{Package: pkg}
+				if err := golang.Get(log, gogetFlags); err != nil {
+					errors <- err
+				}
+			}(pkg)
+		}
+		wg.Wait()
+		close(errors)
+		failed := false
+		for err := range errors {
+			Printf("Go get failed: %v\n", err)
+			failed = true
+		}
+		if failed {
+			os.Exit(1)
+		}
+	}
+}
+
+func runGoVendor(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		CommandError(cmd, "Expected <package> argument\n")
+	} else {
+		wg := sync.WaitGroup{}
+		errors := make(chan error, len(args))
+		for _, pkg := range args {
+			wg.Add(1)
+			go func(pkg string) {
+				defer wg.Done()
+				goVendorFlags := &golang.VendorFlags{Package: pkg, VendorDir: vendorDir}
+				if err := golang.Vendor(log, goVendorFlags); err != nil {
+					errors <- err
+				}
+			}(pkg)
+		}
+		wg.Wait()
+		close(errors)
+		failed := false
+		for err := range errors {
+			Printf("Go vendor failed: %v\n", err)
+			failed = true
+		}
+		if failed {
+			os.Exit(1)
+		}
+	}
+}

@@ -1,4 +1,4 @@
-package get
+package golang
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/juju/errgo"
 	"github.com/mgutz/ansi"
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	srcDir          = "src"
-	cacheValidHours = 12
+	srcDir     = "src"
+	cacheValid = time.Hour * 12
 )
 
 var (
@@ -29,7 +30,7 @@ var (
 	gopath    string
 )
 
-type Flags struct {
+type GetFlags struct {
 	Package string
 }
 
@@ -38,7 +39,7 @@ func init() {
 }
 
 // Get executes a `go get` with a cache support.
-func Get(log *log.Logger, flags *Flags) error {
+func Get(log *log.Logger, flags *GetFlags) error {
 	// Check GOPATH
 	if gopath == "" {
 		return maskAny(errors.New("Specify GOPATH"))
@@ -46,7 +47,7 @@ func Get(log *log.Logger, flags *Flags) error {
 	gopathDir := strings.Split(gopath, string(os.PathListSeparator))[0]
 
 	// Get cache dir
-	cachedir, cacheIsValid, err := cache.Dir(flags.Package, cacheValidHours)
+	cachedir, cacheIsValid, err := cache.Dir(flags.Package, cacheValid)
 	if err != nil {
 		return maskAny(err)
 	}

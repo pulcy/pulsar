@@ -51,7 +51,7 @@ func ClearAll() error {
 
 // Dir returns the cache directory for a given key.
 // Returns: path, isValid, error
-func Dir(key string, cacheValidHours int) (string, bool, error) {
+func Dir(key string, cacheValid time.Duration) (string, bool, error) {
 	cachedir, err := dir(key)
 	if err != nil {
 		return "", false, maskAny(err)
@@ -66,7 +66,7 @@ func Dir(key string, cacheValidHours int) (string, bool, error) {
 	isValid := false
 	if err == nil {
 		// Package cache directory exists, check age.
-		if cacheValidHours > 0 && s.ModTime().Add(time.Hour*time.Duration(cacheValidHours)).Before(time.Now()) {
+		if cacheValid != 0 && s.ModTime().Add(cacheValid).Before(time.Now()) {
 			// Cache has become invalid
 			if err := os.RemoveAll(cachedir); err != nil {
 				return "", false, maskAny(err)
