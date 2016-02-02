@@ -35,7 +35,7 @@ func Vendor(log *log.Logger, flags *VendorFlags) error {
 	if err := os.MkdirAll(flags.VendorDir, 0777); err != nil {
 		return maskAny(err)
 	}
-	if err := util.ExecPrintError(nil, "rsync", "-a", filepath.Join(cachedir, srcDir)+"/", flags.VendorDir); err != nil {
+	if err := util.ExecPrintError(nil, "rsync", "--exclude", ".git", "-a", filepath.Join(cachedir, srcDir)+"/", flags.VendorDir); err != nil {
 		return maskAny(err)
 	}
 
