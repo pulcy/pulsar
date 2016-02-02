@@ -4,7 +4,7 @@ VERSION:= $(shell cat VERSION)
 COMMIT := $(shell git rev-parse --short HEAD)
 
 GOBUILDDIR := $(SCRIPTDIR)/.gobuild
-SRCDIR := $(SCRIPTDIR)/src
+SRCDIR := $(SCRIPTDIR)
 BINDIR := $(SCRIPTDIR)
 
 ORGPATH := git.pulcy.com/pulcy
@@ -35,7 +35,7 @@ clean:
 
 .gobuild:
 	mkdir -p $(ORGDIR)
-	rm -f $(REPODIR) && ln -s ../../../../src $(REPODIR)
+	rm -f $(REPODIR) && ln -s ../../../../ $(REPODIR)
 	git clone git@github.com:juju/errgo.git $(GOBUILDDIR)/src/github.com/juju/errgo
 	git clone git@github.com:op/go-logging.git $(GOBUILDDIR)/src/github.com/op/go-logging
 	git clone git@github.com:spf13/pflag.git $(GOBUILDDIR)/src/github.com/spf13/pflag
@@ -50,7 +50,7 @@ clean:
 	GOPATH=$(GOPATH) go get github.com/mgutz/ansi
 
 $(BIN): .gobuild $(SOURCES)
-	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o ../$(PROJECT)
+	cd $(SRCDIR) &&    go build -a -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o $(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler
