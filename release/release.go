@@ -193,12 +193,12 @@ func Release(log *log.Logger, flags *Flags) error {
 		}
 
 		// Push changes
-		if err := git.Push(log, "", false); err != nil {
+		if err := git.Push(log, "origin", false); err != nil {
 			return err
 		}
 
 		// Push tags
-		if err := git.Push(log, "", true); err != nil {
+		if err := git.Push(log, "origin", true); err != nil {
 			return err
 		}
 	}
