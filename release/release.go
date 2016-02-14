@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-semver/semver"
@@ -143,7 +144,7 @@ func Release(log *log.Logger, flags *Flags) error {
 		// Build docker images
 		tagVersion := version.String()
 		if isDev {
-			tagVersion = time.Now().Format("2006-01-02-15-04-05")
+			tagVersion = strings.Replace(time.Now().Format("2006-01-02-15-04-05"), "-", "", -1)
 		}
 		tag := fmt.Sprintf("%s:%s", info.Image, tagVersion)
 		latestTag := fmt.Sprintf("%s:latest", info.Image)
