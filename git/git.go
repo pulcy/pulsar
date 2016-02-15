@@ -23,7 +23,7 @@ import (
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
-	"git.pulcy.com/pulcy/pulcy/util"
+	"github.com/pulcy/pulcy/util"
 )
 
 var (

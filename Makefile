@@ -8,7 +8,7 @@ SRCDIR := $(SCRIPTDIR)
 BINDIR := $(SCRIPTDIR)
 VENDORDIR = $(SCRIPTDIR)/vendor
 
-ORGPATH := git.pulcy.com/pulcy
+ORGPATH := github.com/pulcy
 ORGDIR := $(GOBUILDDIR)/src/$(ORGPATH)
 REPONAME := $(PROJECT)
 REPODIR := $(ORGDIR)/$(REPONAME)

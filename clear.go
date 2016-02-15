@@ -17,7 +17,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"git.pulcy.com/pulcy/pulcy/cache"
+	"github.com/pulcy/pulcy/cache"
 )
 
 var (
