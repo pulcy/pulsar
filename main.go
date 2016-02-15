@@ -24,13 +24,13 @@ import (
 
 var (
 	projectVersion = "dev"
-	projectName    = "pulcy"
+	projectName    = "pulsar"
 	projectBuild   = "dev"
 	log            = logPkg.MustGetLogger(projectName)
 
 	mainCmd = &cobra.Command{
 		Use:   projectName,
-		Short: "Pulcy is a helper for development environments",
+		Short: "Pulsar is a helper for Pulcy development environments",
 		Run:   UsageFunc,
 	}
 )

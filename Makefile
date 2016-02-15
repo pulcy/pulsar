@@ -1,4 +1,4 @@
-PROJECT := pulcy
+PROJECT := pulsar
 SCRIPTDIR := $(shell pwd)
 VERSION:= $(shell cat VERSION)
 COMMIT := $(shell git rev-parse --short HEAD)

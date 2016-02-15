@@ -26,9 +26,9 @@ import (
 	"github.com/juju/errgo"
 	log "github.com/op/go-logging"
 
-	"github.com/pulcy/pulcy/docker"
-	"github.com/pulcy/pulcy/git"
-	"github.com/pulcy/pulcy/util"
+	"github.com/pulcy/pulsar/docker"
+	"github.com/pulcy/pulsar/git"
+	"github.com/pulcy/pulsar/util"
 )
 
 const (

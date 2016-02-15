@@ -22,9 +22,9 @@ import (
 	"github.com/mgutz/ansi"
 	log "github.com/op/go-logging"
 
-	"github.com/pulcy/pulcy/cache"
-	"github.com/pulcy/pulcy/git"
-	"github.com/pulcy/pulcy/util"
+	"github.com/pulcy/pulsar/cache"
+	"github.com/pulcy/pulsar/git"
+	"github.com/pulcy/pulsar/util"
 )
 
 const (

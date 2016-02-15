@@ -18,7 +18,7 @@ import (
 	"github.com/coreos/go-semver/semver"
 	"github.com/spf13/cobra"
 
-	"github.com/pulcy/pulcy/release"
+	"github.com/pulcy/pulsar/release"
 )
 
 var (

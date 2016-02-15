@@ -21,8 +21,8 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"github.com/pulcy/pulcy/cache"
-	"github.com/pulcy/pulcy/util"
+	"github.com/pulcy/pulsar/cache"
+	"github.com/pulcy/pulsar/util"
 )
 
 type VendorFlags struct {

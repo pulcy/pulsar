@@ -19,7 +19,7 @@ import (
 
 	log "github.com/op/go-logging"
 
-	"github.com/pulcy/pulcy/util"
+	"github.com/pulcy/pulsar/util"
 )
 
 // Push a docker image to the arvika-ssh registry

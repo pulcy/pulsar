@@ -17,7 +17,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/pulcy/pulcy/docker"
+	"github.com/pulcy/pulsar/docker"
 )
 
 var (

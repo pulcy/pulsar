@@ -20,7 +20,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pulcy/pulcy/golang"
+	"github.com/pulcy/pulsar/golang"
 )
 
 var (

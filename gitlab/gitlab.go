@@ -25,7 +25,7 @@ import (
 	"github.com/ewoutp/go-gitlab-client"
 	"github.com/juju/errgo"
 
-	"github.com/pulcy/pulcy/git"
+	"github.com/pulcy/pulsar/git"
 )
 
 const (

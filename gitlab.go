@@ -17,7 +17,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/pulcy/pulcy/gitlab"
+	"github.com/pulcy/pulsar/gitlab"
 )
 
 const (
