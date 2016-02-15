@@ -1,4 +1,4 @@
-# Pulcy Development Environment
+# Pulsar: Pulcy Development Environment
 
 ## Requirements
 
@@ -12,5 +12,6 @@
 
 Clone the Pulcy development environment tools:
 ```
-git clone git@git.pulcy.com/pulcy/pulcy.git
+git clone git@github.com/pulcy/pulsar.git
+make
 ```
