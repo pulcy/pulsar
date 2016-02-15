@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	defaultGitlabHost           = "https://arvika.pulcy.com"
 	defaultGitlabApiPath        = "/api/v3"
 	defaultGitlabPrTargetBranch = "master"
 )
@@ -38,7 +37,7 @@ var (
 )
 
 func init() {
-	gitlabCmd.Flags().StringVarP(&gitlabFlags.Host, "host", "", defaultGitlabHost, "Specify gitlab host")
+	gitlabCmd.Flags().StringVarP(&gitlabFlags.Host, "host", "", defaultGitlabHost(), "Specify gitlab host")
 	gitlabCmd.Flags().StringVarP(&gitlabFlags.ApiPath, "api-path", "", defaultGitlabApiPath, "Specify gitlab API path")
 	gitlabCmd.Flags().StringVarP(&gitlabFlags.Token, "token", "", "", "Specify gitlab token")
 	mainCmd.AddCommand(gitlabCmd)

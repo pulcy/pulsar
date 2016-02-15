@@ -20,10 +20,6 @@ import (
 	"github.com/pulcy/pulcy/release"
 )
 
-const (
-	defaultDockerRegistry = "registry.pulcy.com"
-)
-
 var (
 	releaseFlags = &release.Flags{}
 	releaseCmd   = &cobra.Command{
@@ -35,7 +31,7 @@ var (
 )
 
 func init() {
-	releaseCmd.Flags().StringVarP(&releaseFlags.DockerRegistry, "registry", "r", defaultDockerRegistry, "Specify docker registry")
+	releaseCmd.Flags().StringVarP(&releaseFlags.DockerRegistry, "registry", "r", defaultDockerRegistry(), "Specify docker registry")
 	mainCmd.AddCommand(releaseCmd)
 	releaseCmd.AddCommand(&cobra.Command{
 		Use:   "major",

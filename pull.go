@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	pullCmd.Flags().StringVarP(&pullDockerRegistry, "registry", "r", defaultDockerRegistry, "Specify docker registry")
+	pullCmd.Flags().StringVarP(&pullDockerRegistry, "registry", "r", defaultDockerRegistry(), "Specify docker registry")
 	mainCmd.AddCommand(pullCmd)
 }
 
