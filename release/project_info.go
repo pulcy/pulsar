@@ -16,6 +16,7 @@ package release
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -25,7 +26,7 @@ import (
 type ProjectInfo struct {
 	Name      string
 	Version   string
-	pkg       map[string]interface{}
+	Manifests []Manifest
 	Image     string
 	Registry  string
 	NoGrunt   bool // If set, grunt won't be called even if there is a Gruntfile.js
@@ -43,6 +44,7 @@ type ProjectSettings struct {
 	Targets   struct {
 		CleanTarget string `json:"clean"`
 	} `json:"targets"`
+	ManifestFiles []string `json:"manifest-files"` // Additional manifest files
 }
 
 const (
@@ -52,20 +54,22 @@ const (
 func GetProjectInfo() (*ProjectInfo, error) {
 	// Read the current version and name
 	project := ""
-	pkg, err := readPackageJson()
+	manifests := []Manifest{}
+	mf, err := tryReadManifest(packageJsonFile)
 	if err != nil {
-		return nil, err
+		return nil, maskAny(err)
 	}
 	var oldVersion string
-	if pkg != nil {
-		oldVersion = pkg[versionKey].(string)
-		project = pkg[nameKey].(string)
+	if mf != nil {
+		manifests = append(manifests, *mf)
+		oldVersion = mf.Data[versionKey].(string)
+		project = mf.Data[nameKey].(string)
 	}
 	if oldVersion == "" {
 		// Read version from VERSION file
 		oldVersion, err = readVersion()
 		if err != nil {
-			return nil, err
+			return nil, maskAny(err)
 		}
 	}
 	if oldVersion == "" {
@@ -74,7 +78,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	if project == "" {
 		// Take current directory as name
 		if dir, err := os.Getwd(); err != nil {
-			return nil, err
+			return nil, maskAny(err)
 		} else {
 			project = path.Base(dir)
 		}
@@ -87,7 +91,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	tagLatest := false
 	settings, err := readProjectSettings()
 	if err != nil {
-		return nil, err
+		return nil, maskAny(err)
 	}
 	if settings != nil {
 		if settings.Image != "" {
@@ -98,6 +102,16 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		}
 		noGrunt = settings.NoGrunt
 		tagLatest = settings.TagLatest
+
+		for _, path := range settings.ManifestFiles {
+			mf, err := tryReadManifest(path)
+			if err != nil {
+				return nil, maskAny(err)
+			} else if mf == nil {
+				return nil, maskAny(fmt.Errorf("manifest '%s' not found", path))
+			}
+			manifests = append(manifests, *mf)
+		}
 	}
 
 	result := &ProjectInfo{
@@ -107,7 +121,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		NoGrunt:   noGrunt,
 		TagLatest: tagLatest,
 		Version:   oldVersion,
-		pkg:       pkg,
+		Manifests: manifests,
 	}
 	result.Targets.CleanTarget = "clean"
 	if settings != nil && settings.Targets.CleanTarget != "" {
@@ -117,30 +131,13 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	return result, nil
 }
 
-// Try to read package.json
-func readPackageJson() (packageJson, error) {
-	if data, err := ioutil.ReadFile(packageJsonFile); err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		} else {
-			return nil, err
-		}
-	} else {
-		result := make(packageJson)
-		if err := json.Unmarshal(data, &result); err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-}
-
 // Try to read VERSION
 func readVersion() (string, error) {
 	if data, err := ioutil.ReadFile(versionFile); err != nil {
 		if os.IsNotExist(err) {
 			return "", nil
 		} else {
-			return "", err
+			return "", maskAny(err)
 		}
 	} else {
 		return strings.TrimSpace(string(data)), nil
@@ -153,12 +150,12 @@ func readProjectSettings() (*ProjectSettings, error) {
 		if os.IsNotExist(err) {
 			return nil, nil
 		} else {
-			return nil, err
+			return nil, maskAny(err)
 		}
 	} else {
 		result := &ProjectSettings{}
 		if err := json.Unmarshal(data, result); err != nil {
-			return nil, err
+			return nil, maskAny(err)
 		}
 		return result, nil
 	}

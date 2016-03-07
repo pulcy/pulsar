@@ -48,8 +48,6 @@ type Flags struct {
 	DockerRegistry string
 }
 
-type packageJson map[string]interface{}
-
 func Release(log *log.Logger, flags *Flags) error {
 	// Detect environment
 	hasMakefile := false
@@ -74,19 +72,19 @@ func Release(log *log.Logger, flags *Flags) error {
 	// Read the current version and name
 	info, err := GetProjectInfo()
 	if err != nil {
-		return err
+		return maskAny(err)
 	}
 
 	log.Info("Found old version %s", info.Version)
 	version, err := semver.NewVersion(info.Version)
 	if err != nil {
-		return err
+		return maskAny(err)
 	}
 
 	// Check repository state
 	if !isDev {
 		if err := checkRepoClean(log); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 
@@ -110,8 +108,8 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Write new release version
 	if !isDev {
-		if err := writeVersion(log, version.String(), info.pkg, false); err != nil {
-			return err
+		if err := writeVersion(log, version.String(), info.Manifests, false); err != nil {
+			return maskAny(err)
 		}
 	}
 
@@ -120,23 +118,23 @@ func Release(log *log.Logger, flags *Flags) error {
 		if _, err := os.Stat(nodeModulesFolder); os.IsNotExist(err) {
 			log.Info("Folder %s not found", nodeModulesFolder)
 			if err := util.ExecPrintError(log, "npm", "install"); err != nil {
-				return err
+				return maskAny(err)
 			}
 		}
 		if err := util.ExecPrintError(log, "grunt", "build-release"); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 	if hasMakefile {
 		// Clean first
 		if !isDev {
 			if err := util.ExecPrintError(log, "make", info.Targets.CleanTarget); err != nil {
-				return err
+				return maskAny(err)
 			}
 		}
 		// Now build
 		if err := util.ExecPrintError(log, "make"); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 
@@ -149,11 +147,11 @@ func Release(log *log.Logger, flags *Flags) error {
 		tag := fmt.Sprintf("%s:%s", info.Image, tagVersion)
 		latestTag := fmt.Sprintf("%s:latest", info.Image)
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
-			return err
+			return maskAny(err)
 		}
 		if info.TagLatest {
 			if err := util.ExecPrintError(log, "docker", "tag", "-f", tag, latestTag); err != nil {
-				return err
+				return maskAny(err)
 			}
 		}
 		registry := flags.DockerRegistry
@@ -163,12 +161,12 @@ func Release(log *log.Logger, flags *Flags) error {
 		if registry != "" {
 			// Push image to registry
 			if err := docker.Push(log, tag, registry); err != nil {
-				return err
+				return maskAny(err)
 			}
 			if info.TagLatest {
 				// Push latest image to registry
 				if err := docker.Push(log, latestTag, registry); err != nil {
-					return err
+					return maskAny(err)
 				}
 			}
 		}
@@ -176,31 +174,31 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Build succeeded, re-write new release version and commit
 	if !isDev {
-		if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
-			return err
+		if err := writeVersion(log, version.String(), info.Manifests, true); err != nil {
+			return maskAny(err)
 		}
 
 		// Tag version
 		if err := git.Tag(log, version.String()); err != nil {
-			return err
+			return maskAny(err)
 		}
 
 		// Update version to "+git" working version
 		version.Metadata = "git"
 
 		// Write new release version
-		if err := writeVersion(log, version.String(), info.pkg, true); err != nil {
-			return err
+		if err := writeVersion(log, version.String(), info.Manifests, true); err != nil {
+			return maskAny(err)
 		}
 
 		// Push changes
 		if err := git.Push(log, "origin", false); err != nil {
-			return err
+			return maskAny(err)
 		}
 
 		// Push tags
 		if err := git.Push(log, "origin", true); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 
@@ -209,33 +207,33 @@ func Release(log *log.Logger, flags *Flags) error {
 
 // Update the version of the given package (if any) and an existing VERSION file (if any)
 // Commit changes afterwards
-func writeVersion(log *log.Logger, version string, pkg packageJson, commit bool) error {
+func writeVersion(log *log.Logger, version string, manifests []Manifest, commit bool) error {
 	files := []string{}
-	if pkg != nil {
-		pkg[versionKey] = version
-		data, err := json.MarshalIndent(pkg, "", "  ")
+	for _, mf := range manifests {
+		mf.Data[versionKey] = version
+		data, err := json.MarshalIndent(mf.Data, "", "  ")
 		if err != nil {
-			return err
+			return maskAny(err)
 		}
-		if err := ioutil.WriteFile(packageJsonFile, data, defaultPerm); err != nil {
-			return err
+		if err := ioutil.WriteFile(mf.Path, data, defaultPerm); err != nil {
+			return maskAny(err)
 		}
-		files = append(files, packageJsonFile)
+		files = append(files, mf.Path)
 	}
 	if _, err := os.Stat(versionFile); err == nil {
 		if err := ioutil.WriteFile(versionFile, []byte(version), defaultPerm); err != nil {
-			return err
+			return maskAny(err)
 		}
 		files = append(files, versionFile)
 	}
 
 	if commit {
 		if err := git.Add(log, files...); err != nil {
-			return err
+			return maskAny(err)
 		}
 		msg := fmt.Sprintf("Updated version to %s", version)
 		if err := git.Commit(log, msg); err != nil {
-			return err
+			return maskAny(err)
 		}
 	}
 
@@ -245,17 +243,17 @@ func writeVersion(log *log.Logger, version string, pkg packageJson, commit bool)
 // Are the no uncommited changes in this repo?
 func checkRepoClean(log *log.Logger) error {
 	if st, err := git.Status(log, true); err != nil {
-		return err
+		return maskAny(err)
 	} else if st != "" {
-		return errgo.New("There are uncommited changes")
+		return maskAny(errgo.New("There are uncommited changes"))
 	}
 	if err := git.Fetch(log, "origin"); err != nil {
-		return err
+		return maskAny(err)
 	}
 	if diff, err := git.Diff(log, "master", "origin/master"); err != nil {
-		return err
+		return maskAny(err)
 	} else if diff != "" {
-		return errgo.New("Master is not in sync with origin")
+		return maskAny(errgo.New("Master is not in sync with origin"))
 	}
 
 	return nil
