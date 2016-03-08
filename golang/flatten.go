@@ -21,6 +21,7 @@ import (
 
 	log "github.com/op/go-logging"
 
+	"github.com/pulcy/pulsar/settings"
 	"github.com/pulcy/pulsar/util"
 )
 
@@ -36,7 +37,7 @@ func Flatten(log *log.Logger, flags *FlattenFlags) error {
 		return maskAny(err)
 	}
 	goSrcDir := filepath.Join(gopath, "src")
-	if err := copyFromVendor(log, goSrcDir, vendorDir); err != nil {
+	if err := copyFromVendor(log, goSrcDir, vendorDir, "Copying"); err != nil {
 		return maskAny(err)
 	}
 	if err := flattenGoDir(log, goSrcDir, goSrcDir); err != nil {
@@ -46,7 +47,7 @@ func Flatten(log *log.Logger, flags *FlattenFlags) error {
 	return nil
 }
 
-func copyFromVendor(log *log.Logger, goDir, vendorDir string) error {
+func copyFromVendor(log *log.Logger, goDir, vendorDir, verb string) error {
 	entries, err := ioutil.ReadDir(vendorDir)
 	if err != nil {
 		return maskAny(err)
@@ -60,11 +61,11 @@ func copyFromVendor(log *log.Logger, goDir, vendorDir string) error {
 		entryGoDir := filepath.Join(goDir, entry.Name())
 		if _, err := os.Stat(entryGoDir); os.IsNotExist(err) {
 			// We must create a link
-			log.Infof("copying %s", entryVendorDir)
+			log.Debugf("%s %s", verb, makeRel(entryVendorDir))
 			if err := os.MkdirAll(goDir, 0777); err != nil {
 				return maskAny(err)
 			}
-			if err := util.ExecPrintError(nil, "rsync", "-a", entryVendorDir, goDir); err != nil {
+			if err := util.ExecPrintError(nil, "rsync", "-a", "--ignore-existing", entryVendorDir, goDir); err != nil {
 				return maskAny(err)
 			}
 
@@ -72,7 +73,7 @@ func copyFromVendor(log *log.Logger, goDir, vendorDir string) error {
 			return maskAny(err)
 		} else {
 			// entry already exists in godir, recurse into the directory
-			if err := copyFromVendor(log, entryGoDir, entryVendorDir); err != nil {
+			if err := copyFromVendor(log, entryGoDir, entryVendorDir, verb); err != nil {
 				return maskAny(err)
 			}
 		}
@@ -82,9 +83,12 @@ func copyFromVendor(log *log.Logger, goDir, vendorDir string) error {
 }
 
 func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
-	vendorDir := filepath.Join(curDir, "vendor")
+	vendorDir, err := getVendorDir(curDir)
+	if err != nil {
+		return maskAny(err)
+	}
 	if _, err := os.Stat(vendorDir); err == nil {
-		if err := util.ExecPrintError(nil, "rsync", "-a", "--ignore-existing", vendorDir+"/", goSrcDir); err != nil {
+		if err := copyFromVendor(log, goSrcDir, vendorDir, "Flattening"); err != nil {
 			return maskAny(err)
 		}
 		if err := os.RemoveAll(vendorDir); err != nil {
@@ -108,4 +112,27 @@ func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
 	}
 
 	return nil
+}
+
+func getVendorDir(dir string) (string, error) {
+	settings, err := settings.Read(dir)
+	if err != nil {
+		return "", maskAny(err)
+	}
+	if settings == nil || settings.GoVendorDir == "" {
+		return filepath.Join(dir, DefaultVendorDir), nil
+	}
+	return filepath.Join(dir, settings.GoVendorDir), nil
+}
+
+func makeRel(path string) string {
+	wd, err := os.Getwd()
+	if err != nil {
+		return path
+	}
+	rel, err := filepath.Rel(wd, path)
+	if err != nil {
+		return path
+	}
+	return rel
 }

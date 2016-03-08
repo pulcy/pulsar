@@ -25,6 +25,10 @@ import (
 	"github.com/pulcy/pulsar/util"
 )
 
+const (
+	DefaultVendorDir = "vendor"
+)
+
 type VendorFlags struct {
 	Package   string
 	VendorDir string

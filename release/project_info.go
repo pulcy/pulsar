@@ -15,12 +15,13 @@
 package release
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/pulcy/pulsar/settings"
 )
 
 type ProjectInfo struct {
@@ -35,21 +36,6 @@ type ProjectInfo struct {
 		CleanTarget string
 	}
 }
-
-type ProjectSettings struct {
-	Image     string `json:"image"`      // Docker image name
-	Registry  string `json:"registry"`   // Docker registry prefix
-	NoGrunt   bool   `json:"no-grunt"`   // If set, grunt won't be called even if there is a Gruntfile.js
-	TagLatest bool   `json:"tag-latest"` // If set, a latest tag will be set of the docker image
-	Targets   struct {
-		CleanTarget string `json:"clean"`
-	} `json:"targets"`
-	ManifestFiles []string `json:"manifest-files"` // Additional manifest files
-}
-
-const (
-	projectSettingsFile = ".pulcy"
-)
 
 func GetProjectInfo() (*ProjectInfo, error) {
 	// Read the current version and name
@@ -89,7 +75,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	registry := ""
 	noGrunt := false
 	tagLatest := false
-	settings, err := readProjectSettings()
+	settings, err := settings.Read(".")
 	if err != nil {
 		return nil, maskAny(err)
 	}
@@ -141,22 +127,5 @@ func readVersion() (string, error) {
 		}
 	} else {
 		return strings.TrimSpace(string(data)), nil
-	}
-}
-
-// Try to read .devtool file
-func readProjectSettings() (*ProjectSettings, error) {
-	if data, err := ioutil.ReadFile(projectSettingsFile); err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		} else {
-			return nil, maskAny(err)
-		}
-	} else {
-		result := &ProjectSettings{}
-		if err := json.Unmarshal(data, result); err != nil {
-			return nil, maskAny(err)
-		}
-		return result, nil
 	}
 }

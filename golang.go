@@ -49,7 +49,7 @@ var (
 )
 
 func init() {
-	goCmd.PersistentFlags().StringVarP(&vendorDir, "vendor-dir", "V", "./vendor", "Specify vendor directory")
+	goCmd.PersistentFlags().StringVarP(&vendorDir, "vendor-dir", "V", golang.DefaultVendorDir, "Specify vendor directory")
 
 	mainCmd.AddCommand(goCmd)
 	goCmd.AddCommand(goGetCmd)
