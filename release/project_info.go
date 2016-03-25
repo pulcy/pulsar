@@ -25,14 +25,15 @@ import (
 )
 
 type ProjectInfo struct {
-	Name      string
-	Version   string
-	Manifests []Manifest
-	Image     string
-	Registry  string
-	NoGrunt   bool // If set, grunt won't be called even if there is a Gruntfile.js
-	TagLatest bool `json:"tag-latest"` // If set, a latest tag will be set of the docker image
-	Targets   struct {
+	Name             string
+	Version          string
+	Manifests        []Manifest
+	Image            string
+	Registry         string
+	NoGrunt          bool // If set, grunt won't be called even if there is a Gruntfile.js
+	TagLatest        bool `json:"tag-latest"` // If set, a latest tag will be set of the docker image
+	GradleConfigFile string
+	Targets          struct {
 		CleanTarget string
 	}
 }
@@ -75,6 +76,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	registry := ""
 	noGrunt := false
 	tagLatest := false
+	gradleConfigFile := ""
 	settings, err := settings.Read(".")
 	if err != nil {
 		return nil, maskAny(err)
@@ -88,6 +90,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		}
 		noGrunt = settings.NoGrunt
 		tagLatest = settings.TagLatest
+		gradleConfigFile = settings.GradleConfigFile
 
 		for _, path := range settings.ManifestFiles {
 			mf, err := tryReadManifest(path)
@@ -101,13 +104,14 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	}
 
 	result := &ProjectInfo{
-		Name:      project,
-		Image:     image,
-		Registry:  registry,
-		NoGrunt:   noGrunt,
-		TagLatest: tagLatest,
-		Version:   oldVersion,
-		Manifests: manifests,
+		Name:             project,
+		Image:            image,
+		Registry:         registry,
+		NoGrunt:          noGrunt,
+		TagLatest:        tagLatest,
+		Version:          oldVersion,
+		Manifests:        manifests,
+		GradleConfigFile: gradleConfigFile,
 	}
 	result.Targets.CleanTarget = "clean"
 	if settings != nil && settings.Targets.CleanTarget != "" {

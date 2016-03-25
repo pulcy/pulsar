@@ -108,7 +108,7 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Write new release version
 	if !isDev {
-		if err := writeVersion(log, version.String(), info.Manifests, false); err != nil {
+		if err := writeVersion(log, version.String(), info.Manifests, info.GradleConfigFile, false); err != nil {
 			return maskAny(err)
 		}
 	}
@@ -174,7 +174,7 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Build succeeded, re-write new release version and commit
 	if !isDev {
-		if err := writeVersion(log, version.String(), info.Manifests, true); err != nil {
+		if err := writeVersion(log, version.String(), info.Manifests, info.GradleConfigFile, true); err != nil {
 			return maskAny(err)
 		}
 
@@ -187,7 +187,7 @@ func Release(log *log.Logger, flags *Flags) error {
 		version.Metadata = "git"
 
 		// Write new release version
-		if err := writeVersion(log, version.String(), info.Manifests, true); err != nil {
+		if err := writeVersion(log, version.String(), info.Manifests, info.GradleConfigFile, true); err != nil {
 			return maskAny(err)
 		}
 
@@ -207,7 +207,7 @@ func Release(log *log.Logger, flags *Flags) error {
 
 // Update the version of the given package (if any) and an existing VERSION file (if any)
 // Commit changes afterwards
-func writeVersion(log *log.Logger, version string, manifests []Manifest, commit bool) error {
+func writeVersion(log *log.Logger, version string, manifests []Manifest, gradleConfigFile string, commit bool) error {
 	files := []string{}
 	for _, mf := range manifests {
 		mf.Data[versionKey] = version
@@ -225,6 +225,12 @@ func writeVersion(log *log.Logger, version string, manifests []Manifest, commit 
 			return maskAny(err)
 		}
 		files = append(files, versionFile)
+	}
+	if gradleConfigFile != "" {
+		if err := createGradleVersionFile(gradleConfigFile, version); err != nil {
+			return maskAny(err)
+		}
+		files = append(files, gradleConfigFile)
 	}
 
 	if commit {
