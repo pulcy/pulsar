@@ -158,14 +158,15 @@ func Release(log *log.Logger, flags *Flags) error {
 		if info.Registry != "" {
 			registry = info.Registry
 		}
-		if registry != "" {
+		namespace := info.Namespace
+		if registry != "" || namespace != "" {
 			// Push image to registry
-			if err := docker.Push(log, tag, registry); err != nil {
+			if err := docker.Push(log, tag, registry, namespace); err != nil {
 				return maskAny(err)
 			}
 			if info.TagLatest {
 				// Push latest image to registry
-				if err := docker.Push(log, latestTag, registry); err != nil {
+				if err := docker.Push(log, latestTag, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}

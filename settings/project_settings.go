@@ -30,6 +30,7 @@ var (
 type ProjectSettings struct {
 	Image     string `json:"image"`      // Docker image name
 	Registry  string `json:"registry"`   // Docker registry prefix
+	Namespace string `json:"namespace"`  // Docker namespace prefix
 	NoGrunt   bool   `json:"no-grunt"`   // If set, grunt won't be called even if there is a Gruntfile.js
 	TagLatest bool   `json:"tag-latest"` // If set, a latest tag will be set of the docker image
 	Targets   struct {

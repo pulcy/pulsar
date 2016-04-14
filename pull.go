@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	pullDockerRegistry string
-	pullCmd            = &cobra.Command{
+	pullDockerRegistry  string
+	pullDockerNamespace string
+	pullCmd             = &cobra.Command{
 		Use:   "pull",
 		Short: "Pull an image from the default registry",
 		Long:  "Pull an image from the default registry",
@@ -32,6 +33,7 @@ var (
 
 func init() {
 	pullCmd.Flags().StringVarP(&pullDockerRegistry, "registry", "r", defaultDockerRegistry(), "Specify docker registry")
+	pullCmd.Flags().StringVarP(&pullDockerNamespace, "namespace", "n", defaultDockerNamespace(), "Specify docker namespace")
 	mainCmd.AddCommand(pullCmd)
 }
 
@@ -40,7 +42,7 @@ func runPull(cmd *cobra.Command, args []string) {
 	case 0:
 		CommandError(cmd, "Too few arguments\n")
 	case 1:
-		err := docker.Pull(log, args[0], pushDockerRegistry)
+		err := docker.Pull(log, args[0], pullDockerRegistry, pullDockerNamespace)
 		if err != nil {
 			Quitf("%s\n", err)
 		}

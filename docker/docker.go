@@ -15,7 +15,7 @@
 package docker
 
 import (
-	"fmt"
+	"path"
 
 	log "github.com/op/go-logging"
 
@@ -23,8 +23,8 @@ import (
 )
 
 // Push a docker image to the arvika-ssh registry
-func Push(log *log.Logger, image, dockerRegistry string) error {
-	registryTag := fmt.Sprintf("%s/%s", dockerRegistry, image)
+func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
+	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
 	if err := util.ExecPrintError(log, "docker", "tag", "-f", image, registryTag); err != nil {
 		return err
 	}
@@ -40,8 +40,8 @@ func Push(log *log.Logger, image, dockerRegistry string) error {
 }
 
 // Pull a docker image from the arvika-ssh registry
-func Pull(log *log.Logger, image, dockerRegistry string) error {
-	registryTag := fmt.Sprintf("%s/%s", dockerRegistry, image)
+func Pull(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
+	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
 	// Pull
 	if err := util.ExecPrintError(log, "docker", "pull", registryTag); err != nil {
 		return err

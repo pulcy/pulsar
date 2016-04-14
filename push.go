@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	pushDockerRegistry string
-	pushCmd            = &cobra.Command{
+	pushDockerRegistry  string
+	pushDockerNamespace string
+	pushCmd             = &cobra.Command{
 		Use:   "push",
 		Short: "Push an image to the default registry",
 		Long:  "Push an image to the default registry",
@@ -32,6 +33,7 @@ var (
 
 func init() {
 	pushCmd.Flags().StringVarP(&pushDockerRegistry, "registry", "r", defaultDockerRegistry(), "Specify docker registry")
+	pushCmd.Flags().StringVarP(&pushDockerNamespace, "namespace", "n", defaultDockerNamespace(), "Specify docker namespace")
 	mainCmd.AddCommand(pushCmd)
 }
 
@@ -40,7 +42,7 @@ func runPush(cmd *cobra.Command, args []string) {
 	case 0:
 		CommandError(cmd, "Too few arguments\n")
 	case 1:
-		err := docker.Push(log, args[0], pushDockerRegistry)
+		err := docker.Push(log, args[0], pushDockerRegistry, pushDockerNamespace)
 		if err != nil {
 			Quitf("%s\n", err)
 		}

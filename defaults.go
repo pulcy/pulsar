@@ -22,6 +22,10 @@ func defaultDockerRegistry() string {
 	return os.Getenv("PULCY_REGISTRY")
 }
 
+func defaultDockerNamespace() string {
+	return os.Getenv("PULCY_NAMESPACE")
+}
+
 func defaultGitlabHost() string {
 	return os.Getenv("PULCY_GITLAB")
 }

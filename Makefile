@@ -16,7 +16,7 @@ REPOPATH := $(ORGPATH)/$(REPONAME)
 BIN := $(BINDIR)/$(PROJECT)
 
 GOPATH := $(GOBUILDDIR)
-GOVERSION := 1.6.0-alpine
+GOVERSION := 1.6.1-alpine
 
 SOURCES := $(shell find $(SRCDIR) -name '*.go')
 

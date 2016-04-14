@@ -30,6 +30,7 @@ type ProjectInfo struct {
 	Manifests        []Manifest
 	Image            string
 	Registry         string
+	Namespace        string
 	NoGrunt          bool // If set, grunt won't be called even if there is a Gruntfile.js
 	TagLatest        bool `json:"tag-latest"` // If set, a latest tag will be set of the docker image
 	GradleConfigFile string
@@ -74,6 +75,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	// Read project settings (if any)
 	image := project
 	registry := ""
+	namespace := ""
 	noGrunt := false
 	tagLatest := false
 	gradleConfigFile := ""
@@ -87,6 +89,9 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		}
 		if settings.Registry != "" {
 			registry = settings.Registry
+		}
+		if settings.Namespace != "" {
+			namespace = settings.Namespace
 		}
 		noGrunt = settings.NoGrunt
 		tagLatest = settings.TagLatest
@@ -107,6 +112,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		Name:             project,
 		Image:            image,
 		Registry:         registry,
+		Namespace:        namespace,
 		NoGrunt:          noGrunt,
 		TagLatest:        tagLatest,
 		Version:          oldVersion,
