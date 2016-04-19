@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -144,13 +145,15 @@ func Release(log *log.Logger, flags *Flags) error {
 		if isDev {
 			tagVersion = strings.Replace(time.Now().Format("2006-01-02-15-04-05"), "-", "", -1)
 		}
-		tag := fmt.Sprintf("%s:%s", info.Image, tagVersion)
-		latestTag := fmt.Sprintf("%s:latest", info.Image)
-		if err := util.ExecPrintError(log, "docker", "build", "--tag", tag, "."); err != nil {
+		imageAndVersion := fmt.Sprintf("%s:%s", info.Image, tagVersion)
+		imageAndLatest := fmt.Sprintf("%s:latest", info.Image)
+		buildTag := path.Join(info.Namespace, imageAndVersion)
+		buildLatestTag := path.Join(info.Namespace, imageAndLatest)
+		if err := util.ExecPrintError(log, "docker", "build", "--tag", buildTag, "."); err != nil {
 			return maskAny(err)
 		}
 		if info.TagLatest {
-			if err := util.ExecPrintError(log, "docker", "tag", "-f", tag, latestTag); err != nil {
+			if err := util.ExecPrintError(log, "docker", "tag", "-f", buildTag, buildLatestTag); err != nil {
 				return maskAny(err)
 			}
 		}
@@ -161,12 +164,12 @@ func Release(log *log.Logger, flags *Flags) error {
 		namespace := info.Namespace
 		if registry != "" || namespace != "" {
 			// Push image to registry
-			if err := docker.Push(log, tag, registry, namespace); err != nil {
+			if err := docker.Push(log, imageAndVersion, registry, namespace); err != nil {
 				return maskAny(err)
 			}
 			if info.TagLatest {
 				// Push latest image to registry
-				if err := docker.Push(log, latestTag, registry, namespace); err != nil {
+				if err := docker.Push(log, imageAndLatest, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}

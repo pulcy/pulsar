@@ -24,8 +24,9 @@ import (
 
 // Push a docker image to the arvika-ssh registry
 func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
+	localTag := path.Join(dockerNamespace, image)
 	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
-	if err := util.ExecPrintError(log, "docker", "tag", "-f", image, registryTag); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", "-f", localTag, registryTag); err != nil {
 		return err
 	}
 	// Push
@@ -41,12 +42,13 @@ func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) error 
 
 // Pull a docker image from the arvika-ssh registry
 func Pull(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
+	localTag := path.Join(dockerNamespace, image)
 	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
 	// Pull
 	if err := util.ExecPrintError(log, "docker", "pull", registryTag); err != nil {
 		return err
 	}
-	if err := util.ExecPrintError(log, "docker", "tag", "-f", registryTag, image); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", "-f", registryTag, localTag); err != nil {
 		return err
 	}
 	// Remove registry tag
