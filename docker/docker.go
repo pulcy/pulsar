@@ -26,7 +26,7 @@ import (
 func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
 	localTag := path.Join(dockerNamespace, image)
 	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
-	if err := util.ExecPrintError(log, "docker", "tag", "-f", localTag, registryTag); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", localTag, registryTag); err != nil {
 		return err
 	}
 	// Push
@@ -48,7 +48,7 @@ func Pull(log *log.Logger, image, dockerRegistry, dockerNamespace string) error 
 	if err := util.ExecPrintError(log, "docker", "pull", registryTag); err != nil {
 		return err
 	}
-	if err := util.ExecPrintError(log, "docker", "tag", "-f", registryTag, localTag); err != nil {
+	if err := util.ExecPrintError(log, "docker", "tag", registryTag, localTag); err != nil {
 		return err
 	}
 	// Remove registry tag
