@@ -153,7 +153,7 @@ func Release(log *log.Logger, flags *Flags) error {
 			return maskAny(err)
 		}
 		if info.TagLatest {
-			if err := util.ExecPrintError(log, "docker", "tag", "-f", buildTag, buildLatestTag); err != nil {
+			if err := util.ExecPrintError(log, "docker", "tag", buildTag, buildLatestTag); err != nil {
 				return maskAny(err)
 			}
 		}
