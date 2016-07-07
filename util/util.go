@@ -112,6 +112,13 @@ func Exec(log *log.Logger, cmdName string, arguments ...string) (string, error) 
 	return cmd.Run()
 }
 
+// Execute a given command without announcing the command.
+// Return stderr on error, stdout on no error
+func ExecSilent(log *log.Logger, cmdName string, arguments ...string) (string, error) {
+	cmd := PrepareCommand(log, cmdName, arguments...)
+	return cmd.Run()
+}
+
 // Execute a given command without waiting for its result.
 func ExecDetached(log *log.Logger, cmdName string, arguments ...string) error {
 	if log != nil {

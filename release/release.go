@@ -146,14 +146,31 @@ func Release(log *log.Logger, flags *Flags) error {
 			tagVersion = strings.Replace(time.Now().Format("2006-01-02-15-04-05"), "-", "", -1)
 		}
 		imageAndVersion := fmt.Sprintf("%s:%s", info.Image, tagVersion)
+		imageAndMajorVersion := fmt.Sprintf("%s:%d", info.Image, version.Major)
+		imageAndMinorVersion := fmt.Sprintf("%s:%d.%d", info.Image, version.Major, version.Minor)
 		imageAndLatest := fmt.Sprintf("%s:latest", info.Image)
 		buildTag := path.Join(info.Namespace, imageAndVersion)
 		buildLatestTag := path.Join(info.Namespace, imageAndLatest)
+		buildMajorVersionTag := path.Join(info.Namespace, imageAndMajorVersion)
+		buildMinorVersionTag := path.Join(info.Namespace, imageAndMinorVersion)
 		if err := util.ExecPrintError(log, "docker", "build", "--tag", buildTag, "."); err != nil {
 			return maskAny(err)
 		}
 		if info.TagLatest {
+			util.ExecSilent(log, "docker", "rmi", buildLatestTag)
 			if err := util.ExecPrintError(log, "docker", "tag", buildTag, buildLatestTag); err != nil {
+				return maskAny(err)
+			}
+		}
+		if info.TagMajorVersion && !isDev {
+			util.ExecSilent(log, "docker", "rmi", buildMajorVersionTag)
+			if err := util.ExecPrintError(log, "docker", "tag", buildTag, buildMajorVersionTag); err != nil {
+				return maskAny(err)
+			}
+		}
+		if info.TagMinorVersion && !isDev {
+			util.ExecSilent(log, "docker", "rmi", buildMinorVersionTag)
+			if err := util.ExecPrintError(log, "docker", "tag", buildTag, buildMinorVersionTag); err != nil {
 				return maskAny(err)
 			}
 		}
@@ -170,6 +187,18 @@ func Release(log *log.Logger, flags *Flags) error {
 			if info.TagLatest {
 				// Push latest image to registry
 				if err := docker.Push(log, imageAndLatest, registry, namespace); err != nil {
+					return maskAny(err)
+				}
+			}
+			if info.TagMajorVersion && !isDev {
+				// Push major version image to registry
+				if err := docker.Push(log, imageAndMajorVersion, registry, namespace); err != nil {
+					return maskAny(err)
+				}
+			}
+			if info.TagMinorVersion && !isDev {
+				// Push minor version image to registry
+				if err := docker.Push(log, imageAndMinorVersion, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}

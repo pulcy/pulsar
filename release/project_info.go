@@ -32,7 +32,9 @@ type ProjectInfo struct {
 	Registry         string
 	Namespace        string
 	NoGrunt          bool // If set, grunt won't be called even if there is a Gruntfile.js
-	TagLatest        bool `json:"tag-latest"` // If set, a latest tag will be set of the docker image
+	TagLatest        bool `json:"tag-latest"`        // If set, a latest tag will be set of the docker image
+	TagMajorVersion  bool `json:"tag-major-version"` // If set, a tag will be set to the major version of the docker image (e.g. myimage:3)
+	TagMinorVersion  bool `json:"tag-minor-version"` // If set, a tag will be set to the minor version of the docker image (e.g. myimage:3.2)
 	GradleConfigFile string
 	Targets          struct {
 		CleanTarget string
@@ -78,6 +80,8 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	namespace := ""
 	noGrunt := false
 	tagLatest := false
+	tagMajorVersion := false
+	tagMinorVersion := false
 	gradleConfigFile := ""
 	settings, err := settings.Read(".")
 	if err != nil {
@@ -95,6 +99,8 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		}
 		noGrunt = settings.NoGrunt
 		tagLatest = settings.TagLatest
+		tagMajorVersion = settings.TagMajorVersion
+		tagMinorVersion = settings.TagMinorVersion
 		gradleConfigFile = settings.GradleConfigFile
 
 		for _, path := range settings.ManifestFiles {
@@ -115,6 +121,8 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		Namespace:        namespace,
 		NoGrunt:          noGrunt,
 		TagLatest:        tagLatest,
+		TagMajorVersion:  tagMajorVersion,
+		TagMinorVersion:  tagMinorVersion,
 		Version:          oldVersion,
 		Manifests:        manifests,
 		GradleConfigFile: gradleConfigFile,

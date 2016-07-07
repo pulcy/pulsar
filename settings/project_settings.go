@@ -28,12 +28,14 @@ var (
 )
 
 type ProjectSettings struct {
-	Image     string `json:"image"`      // Docker image name
-	Registry  string `json:"registry"`   // Docker registry prefix
-	Namespace string `json:"namespace"`  // Docker namespace prefix
-	NoGrunt   bool   `json:"no-grunt"`   // If set, grunt won't be called even if there is a Gruntfile.js
-	TagLatest bool   `json:"tag-latest"` // If set, a latest tag will be set of the docker image
-	Targets   struct {
+	Image           string `json:"image"`             // Docker image name
+	Registry        string `json:"registry"`          // Docker registry prefix
+	Namespace       string `json:"namespace"`         // Docker namespace prefix
+	NoGrunt         bool   `json:"no-grunt"`          // If set, grunt won't be called even if there is a Gruntfile.js
+	TagLatest       bool   `json:"tag-latest"`        // If set, a latest tag will be set of the docker image
+	TagMajorVersion bool   `json:"tag-major-version"` // If set, a tag will be set to the major version of the docker image (e.g. myimage:3)
+	TagMinorVersion bool   `json:"tag-minor-version"` // If set, a tag will be set to the minor version of the docker image (e.g. myimage:3.2)
+	Targets         struct {
 		CleanTarget string `json:"clean"`
 	} `json:"targets"`
 	ManifestFiles    []string `json:"manifest-files"`     // Additional manifest files
