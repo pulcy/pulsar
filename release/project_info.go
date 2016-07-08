@@ -31,10 +31,11 @@ type ProjectInfo struct {
 	Image            string
 	Registry         string
 	Namespace        string
-	NoGrunt          bool // If set, grunt won't be called even if there is a Gruntfile.js
-	TagLatest        bool `json:"tag-latest"`        // If set, a latest tag will be set of the docker image
-	TagMajorVersion  bool `json:"tag-major-version"` // If set, a tag will be set to the major version of the docker image (e.g. myimage:3)
-	TagMinorVersion  bool `json:"tag-minor-version"` // If set, a tag will be set to the minor version of the docker image (e.g. myimage:3.2)
+	NoGrunt          bool   // If set, grunt won't be called even if there is a Gruntfile.js
+	TagLatest        bool   // If set, a latest tag will be set of the docker image
+	TagMajorVersion  bool   // If set, a tag will be set to the major version of the docker image (e.g. myimage:3)
+	TagMinorVersion  bool   // If set, a tag will be set to the minor version of the docker image (e.g. myimage:3.2)
+	GitBranch        string // If set, this branch is expected (defaults to master)
 	GradleConfigFile string
 	Targets          struct {
 		CleanTarget string
@@ -83,6 +84,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	tagMajorVersion := false
 	tagMinorVersion := false
 	gradleConfigFile := ""
+	gitBranch := "master"
 	settings, err := settings.Read(".")
 	if err != nil {
 		return nil, maskAny(err)
@@ -102,6 +104,9 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		tagMajorVersion = settings.TagMajorVersion
 		tagMinorVersion = settings.TagMinorVersion
 		gradleConfigFile = settings.GradleConfigFile
+		if settings.GitBranch != "" {
+			gitBranch = settings.GitBranch
+		}
 
 		for _, path := range settings.ManifestFiles {
 			mf, err := tryReadManifest(path)
@@ -123,6 +128,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		TagLatest:        tagLatest,
 		TagMajorVersion:  tagMajorVersion,
 		TagMinorVersion:  tagMinorVersion,
+		GitBranch:        gitBranch,
 		Version:          oldVersion,
 		Manifests:        manifests,
 		GradleConfigFile: gradleConfigFile,

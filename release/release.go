@@ -84,7 +84,7 @@ func Release(log *log.Logger, flags *Flags) error {
 
 	// Check repository state
 	if !isDev {
-		if err := checkRepoClean(log); err != nil {
+		if err := checkRepoClean(log, info.GitBranch); err != nil {
 			return maskAny(err)
 		}
 	}
@@ -280,7 +280,7 @@ func writeVersion(log *log.Logger, version string, manifests []Manifest, gradleC
 }
 
 // Are the no uncommited changes in this repo?
-func checkRepoClean(log *log.Logger) error {
+func checkRepoClean(log *log.Logger, branch string) error {
 	if st, err := git.Status(log, true); err != nil {
 		return maskAny(err)
 	} else if st != "" {
@@ -289,10 +289,10 @@ func checkRepoClean(log *log.Logger) error {
 	if err := git.Fetch(log, "origin"); err != nil {
 		return maskAny(err)
 	}
-	if diff, err := git.Diff(log, "master", "origin/master"); err != nil {
+	if diff, err := git.Diff(log, branch, path.Join("origin", branch)); err != nil {
 		return maskAny(err)
 	} else if diff != "" {
-		return maskAny(errgo.New("Master is not in sync with origin"))
+		return maskAny(errgo.Newf("%s is not in sync with origin", branch))
 	}
 
 	return nil
