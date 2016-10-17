@@ -16,7 +16,7 @@ func LoadGithubToken() (string, error) {
 	if token != "" {
 		return token, nil
 	}
-	path, err := homedir.Expand(".pulcy/github-token")
+	path, err := homedir.Expand("~/.pulcy/github-token")
 	if err != nil {
 		return "", maskAny(err)
 	}
