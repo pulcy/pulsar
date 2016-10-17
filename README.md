@@ -1,5 +1,7 @@
 # Pulsar: Pulcy Development Environment
 
+[![Build Status](https://travis-ci.org/pulcy/pulsar.svg?branch=master)](https://travis-ci.org/pulcy/pulsar)
+
 ## Requirements
 
 * Docker
