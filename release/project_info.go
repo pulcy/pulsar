@@ -38,8 +38,10 @@ type ProjectInfo struct {
 	GitBranch        string // If set, this branch is expected (defaults to master)
 	GradleConfigFile string
 	Targets          struct {
-		CleanTarget string
+		CleanTarget   string
+		ReleaseTarget string
 	}
+	GithubAssets []settings.GithubAsset // If set, creates a github release with given assets.
 }
 
 func GetProjectInfo() (*ProjectInfo, error) {
@@ -85,6 +87,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	tagMinorVersion := false
 	gradleConfigFile := ""
 	gitBranch := "master"
+	var githubAssets []settings.GithubAsset
 	settings, err := settings.Read(".")
 	if err != nil {
 		return nil, maskAny(err)
@@ -107,6 +110,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		if settings.GitBranch != "" {
 			gitBranch = settings.GitBranch
 		}
+		githubAssets = settings.GithubAssets
 
 		for _, path := range settings.ManifestFiles {
 			mf, err := tryReadManifest(path)
@@ -132,10 +136,15 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		Version:          oldVersion,
 		Manifests:        manifests,
 		GradleConfigFile: gradleConfigFile,
+		GithubAssets:     githubAssets,
 	}
 	result.Targets.CleanTarget = "clean"
 	if settings != nil && settings.Targets.CleanTarget != "" {
 		result.Targets.CleanTarget = settings.Targets.CleanTarget
+	}
+	result.Targets.ReleaseTarget = ""
+	if settings != nil && settings.Targets.ReleaseTarget != "" {
+		result.Targets.ReleaseTarget = settings.Targets.ReleaseTarget
 	}
 
 	return result, nil

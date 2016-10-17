@@ -28,12 +28,12 @@ ifndef GOARCH
 endif
 
 
-.PHONY: clean test
+.PHONY: clean test release tgz
 
 all: $(BIN)
 
 clean:
-	rm -Rf $(BIN) $(GOBUILDDIR)
+	rm -Rf $(BIN) $(GOBUILDDIR) bin
 
 $(GOBUILDDIR):
 	mkdir -p $(ORGDIR)
@@ -66,6 +66,15 @@ $(BIN): $(GOBUILDDIR) $(SOURCES)
 	    -w /usr/code/ \
 	    golang:$(GOVERSION) \
 	    go build -a -installsuffix netgo -tags netgo -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o /usr/code/$(PROJECT) $(REPOPATH)
+
+release:
+	@${MAKE} -B GOOS=linux GOARCH=amd64 tgz
+	@${MAKE} -B GOOS=darwin GOARCH=amd64 tgz
+
+tgz: $(BIN)
+	mkdir -p bin
+	tar zcf bin/$(PROJECT)-$(GOOS)-$(GOARCH).tgz -C $(SCRIPTDIR) $(PROJECT)
+	rm $(BIN)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler

@@ -134,7 +134,11 @@ func Release(log *log.Logger, flags *Flags) error {
 			}
 		}
 		// Now build
-		if err := util.ExecPrintError(log, "make"); err != nil {
+		makeArgs := []string{}
+		if info.Targets.ReleaseTarget != "" {
+			makeArgs = append(makeArgs, info.Targets.ReleaseTarget)
+		}
+		if err := util.ExecPrintError(log, "make", makeArgs...); err != nil {
 			return maskAny(err)
 		}
 	}
@@ -213,6 +217,11 @@ func Release(log *log.Logger, flags *Flags) error {
 
 		// Tag version
 		if err := git.Tag(log, version.String()); err != nil {
+			return maskAny(err)
+		}
+
+		// Create github release (if needed)
+		if err := createGithubRelease(log, version.String(), *info); err != nil {
 			return maskAny(err)
 		}
 

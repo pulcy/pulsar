@@ -37,11 +37,18 @@ type ProjectSettings struct {
 	TagMinorVersion bool   `json:"tag-minor-version"`    // If set, a tag will be set to the minor version of the docker image (e.g. myimage:3.2)
 	GitBranch       string `json:"git-branch,omitempty"` // If set, this branch is expected (defaults to master)
 	Targets         struct {
-		CleanTarget string `json:"clean"`
+		CleanTarget   string `json:"clean,omitempty"`
+		ReleaseTarget string `json:"release,omitempty"`
 	} `json:"targets"`
-	ManifestFiles    []string `json:"manifest-files"`     // Additional manifest files
-	GoVendorDir      string   `json:"go-vendor-dir"`      // If set, use this instead of `./vendor` as vendor directory.
-	GradleConfigFile string   `json:"gradle-config-file"` // If set, creates a file with this path containing the current version
+	ManifestFiles    []string      `json:"manifest-files"`     // Additional manifest files
+	GoVendorDir      string        `json:"go-vendor-dir"`      // If set, use this instead of `./vendor` as vendor directory.
+	GradleConfigFile string        `json:"gradle-config-file"` // If set, creates a file with this path containing the current version
+	GithubAssets     []GithubAsset `json:"github-assets"`      // If set, creates a github release with given assets.
+}
+
+type GithubAsset struct {
+	RelPath string `json:"path"`            // Relative path to asset file
+	Label   string `json:"label,omitempty"` // Optional label of file
 }
 
 const (

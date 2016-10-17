@@ -1,0 +1,7 @@
+{
+    "github-assets": [{
+        "path": "bin/pulsar-darwin-amd64.tgz"
+    }, {
+        "path": "bin/pulsar-linux-amd64.tgz"
+    }]
+}
