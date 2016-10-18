@@ -42,14 +42,17 @@ var (
 	goFlattenCmd = &cobra.Command{
 		Use:   "flatten",
 		Short: "Copy directories found in the given vendor directory to the GOPATH and flatten all vendor directories found in the GOPATH",
+		Long:  "Copy directories found in the given vendor directory to the GOPATH and flatten all vendor directories found in the GOPATH, or flatten vendor directories in a given target directory.",
 		Run:   runGoFlatten,
 	}
 
-	vendorDir string
+	vendorDir        string
+	flattenTargetDir string
 )
 
 func init() {
 	goCmd.PersistentFlags().StringVarP(&vendorDir, "vendor-dir", "V", golang.DefaultVendorDir, "Specify vendor directory")
+	goFlattenCmd.Flags().StringVarP(&flattenTargetDir, "target-dir", "d", "", "Specify target directory (defaults to $GOPATH/src)")
 
 	mainCmd.AddCommand(goCmd)
 	goCmd.AddCommand(goGetCmd)
@@ -116,7 +119,10 @@ func runGoVendor(cmd *cobra.Command, args []string) {
 }
 
 func runGoFlatten(cmd *cobra.Command, args []string) {
-	flags := &golang.FlattenFlags{VendorDir: vendorDir}
+	flags := &golang.FlattenFlags{
+		VendorDir: vendorDir,
+		TargetDir: flattenTargetDir,
+	}
 	if err := golang.Flatten(log, flags); err != nil {
 		Printf("flatten failed: %#v\n", err)
 		os.Exit(1)

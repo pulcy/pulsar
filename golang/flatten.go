@@ -27,6 +27,7 @@ import (
 
 type FlattenFlags struct {
 	VendorDir string
+	TargetDir string // Defaults to $GOPATH/src
 }
 
 // Flatten copies all directories found in the given vendor directory to the GOPATH
@@ -36,11 +37,20 @@ func Flatten(log *log.Logger, flags *FlattenFlags) error {
 	if err != nil {
 		return maskAny(err)
 	}
-	goSrcDir := filepath.Join(gopath, "src")
-	if err := copyFromVendor(log, goSrcDir, vendorDir, "Copying"); err != nil {
+	targetDir := flags.TargetDir
+	if targetDir == "" {
+		targetDir = filepath.Join(gopath, "src")
+	}
+	targetDir, err = filepath.Abs(targetDir)
+	if err != nil {
 		return maskAny(err)
 	}
-	if err := flattenGoDir(log, goSrcDir, goSrcDir); err != nil {
+	if targetDir != vendorDir {
+		if err := copyFromVendor(log, targetDir, vendorDir, "Copying"); err != nil {
+			return maskAny(err)
+		}
+	}
+	if err := flattenGoDir(log, targetDir, targetDir); err != nil {
 		return maskAny(err)
 	}
 
