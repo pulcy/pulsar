@@ -46,13 +46,13 @@ var (
 		Run:   runGoFlatten,
 	}
 
-	vendorDir        string
-	flattenTargetDir string
+	vendorDir     string
+	vendorFlatten bool
 )
 
 func init() {
 	goCmd.PersistentFlags().StringVarP(&vendorDir, "vendor-dir", "V", golang.DefaultVendorDir, "Specify vendor directory")
-	goFlattenCmd.Flags().StringVarP(&flattenTargetDir, "target-dir", "d", "", "Specify target directory (defaults to $GOPATH/src)")
+	goVendorCmd.Flags().BoolVarP(&vendorFlatten, "flatten", "F", false, "If set, flattens all directories in the vendor directory")
 
 	mainCmd.AddCommand(goCmd)
 	goCmd.AddCommand(goGetCmd)
@@ -115,13 +115,27 @@ func runGoVendor(cmd *cobra.Command, args []string) {
 		if failed {
 			os.Exit(1)
 		}
+		if vendorFlatten {
+			flags := &golang.FlattenFlags{
+				VendorDir: vendorDir,
+				TargetDir: vendorDir,
+			}
+			if err := golang.Flatten(log, flags); err != nil {
+				Printf("flatten failed: %#v\n", err)
+				os.Exit(1)
+			}
+		}
 	}
 }
 
 func runGoFlatten(cmd *cobra.Command, args []string) {
+	targetDir := ""
+	if len(args) == 1 {
+		targetDir = args[0]
+	}
 	flags := &golang.FlattenFlags{
 		VendorDir: vendorDir,
-		TargetDir: flattenTargetDir,
+		TargetDir: targetDir,
 	}
 	if err := golang.Flatten(log, flags); err != nil {
 		Printf("flatten failed: %#v\n", err)
