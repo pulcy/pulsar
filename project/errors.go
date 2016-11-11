@@ -12,29 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package settings
+package project
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/juju/errgo"
 )
 
-const (
-	InitialVersion = "0.0.0+git"
-	VersionFile    = "VERSION"
+var (
+	maskAny = errgo.MaskFunc(errgo.Any)
 )
-
-// Try to read VERSION
-func ReadVersion(projectDir string) (string, error) {
-	if data, err := ioutil.ReadFile(filepath.Join(projectDir, VersionFile)); err != nil {
-		if os.IsNotExist(err) {
-			return InitialVersion, nil
-		} else {
-			return "", maskAny(err)
-		}
-	} else {
-		return strings.TrimSpace(string(data)), nil
-	}
-}

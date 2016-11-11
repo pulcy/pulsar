@@ -20,10 +20,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/pulcy/pulsar/git"
+	"github.com/pulcy/pulsar/project"
 	"github.com/pulcy/pulsar/settings"
 )
 
 var (
+	projectDir string
 	projectCmd = &cobra.Command{
 		Use:   "project",
 		Short: "Project helpers",
@@ -34,6 +36,31 @@ var (
 		Short: "Output project git commit",
 		Run:   runProjectCommit,
 	}
+	projectInitCmd = &cobra.Command{
+		Use:   "init",
+		Short: "Initialize a project folder",
+		Run:   runProjectInit,
+	}
+	projectNameCmd = &cobra.Command{
+		Use:   "name",
+		Short: "Output project name",
+		Run:   runProjectName,
+	}
+	projectOrganizationCmd = &cobra.Command{
+		Use:   "organization",
+		Short: "Project organization helpers",
+		Run:   UsageFunc,
+	}
+	projectOrganizationPathCmd = &cobra.Command{
+		Use:   "path",
+		Short: "Output project organization path (e.g. 'github.com/pulcy')",
+		Run:   runProjectOrganizationPath,
+	}
+	projectOrganizationNameCmd = &cobra.Command{
+		Use:   "name",
+		Short: "Output project organization name (e.g. 'pulcy')",
+		Run:   runProjectOrganizationName,
+	}
 	projectVersionCmd = &cobra.Command{
 		Use:   "version",
 		Short: "Output project version",
@@ -42,23 +69,62 @@ var (
 )
 
 func init() {
+	projectCmd.PersistentFlags().StringVarP(&projectDir, "dir", "d", ".", "Project directory")
+
 	mainCmd.AddCommand(projectCmd)
 	projectCmd.AddCommand(projectCommitCmd)
+	projectCmd.AddCommand(projectInitCmd)
+	projectCmd.AddCommand(projectNameCmd)
+	projectCmd.AddCommand(projectOrganizationCmd)
 	projectCmd.AddCommand(projectVersionCmd)
+
+	projectOrganizationCmd.AddCommand(projectOrganizationPathCmd)
+	projectOrganizationCmd.AddCommand(projectOrganizationNameCmd)
 }
 
 func runProjectCommit(cmd *cobra.Command, args []string) {
-	commit, err := git.GetLatestLocalCommit(nil, ".", "", true)
+	commit, err := git.GetLatestLocalCommit(nil, projectDir, "", true)
 	if err != nil {
 		Quitf("%s\n", err)
 	}
 	fmt.Println(commit)
 }
 
+func runProjectName(cmd *cobra.Command, args []string) {
+	name, err := settings.GetProjectName(nil, projectDir)
+	if err != nil {
+		Quitf("%s\n", err)
+	}
+	fmt.Println(name)
+}
+
+func runProjectOrganizationName(cmd *cobra.Command, args []string) {
+	name, err := settings.GetProjectOrganizationName(nil, projectDir)
+	if err != nil {
+		Quitf("%s\n", err)
+	}
+	fmt.Println(name)
+}
+
+func runProjectOrganizationPath(cmd *cobra.Command, args []string) {
+	name, err := settings.GetProjectOrganizationPath(nil, projectDir)
+	if err != nil {
+		Quitf("%s\n", err)
+	}
+	fmt.Println(name)
+}
+
 func runProjectVersion(cmd *cobra.Command, args []string) {
-	version, err := settings.ReadVersion()
+	version, err := settings.ReadVersion(projectDir)
 	if err != nil {
 		Quitf("%s\n", err)
 	}
 	fmt.Println(version)
+}
+
+func runProjectInit(cmd *cobra.Command, args []string) {
+	err := project.Initialize(log, project.InitializeFlags{ProjectDir: projectDir})
+	if err != nil {
+		Quitf("%s\n", err)
+	}
 }

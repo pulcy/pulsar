@@ -58,7 +58,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	}
 	if oldVersion == "" {
 		// Read version from VERSION file
-		oldVersion, err = settings.ReadVersion()
+		oldVersion, err = settings.ReadVersion(".")
 		if err != nil {
 			return nil, maskAny(err)
 		}

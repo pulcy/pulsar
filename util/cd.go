@@ -12,29 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package settings
+package util
 
-import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-)
+import "os"
 
-const (
-	InitialVersion = "0.0.0+git"
-	VersionFile    = "VERSION"
-)
-
-// Try to read VERSION
-func ReadVersion(projectDir string) (string, error) {
-	if data, err := ioutil.ReadFile(filepath.Join(projectDir, VersionFile)); err != nil {
-		if os.IsNotExist(err) {
-			return InitialVersion, nil
-		} else {
-			return "", maskAny(err)
-		}
-	} else {
-		return strings.TrimSpace(string(data)), nil
+// ExecuteInDir changes the current directory to the given folder, executes the given action and then changes
+// the current directory back to the original.
+func ExecuteInDir(folder string, action func() error) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return maskAny(err)
 	}
+	if err := os.Chdir(folder); err != nil {
+		return maskAny(err)
+	}
+	defer os.Chdir(wd)
+
+	if err := action(); err != nil {
+		return maskAny(err)
+	}
+	return nil
 }

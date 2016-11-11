@@ -52,6 +52,7 @@ update-vendor:
 		github.com/op/go-logging \
 		github.com/russross/blackfriday \
 		github.com/shurcooL/sanitized_anchor_name \
+		github.com/sourcegraph/go-vcsurl \ 
 		github.com/spf13/cobra \
 		github.com/spf13/pflag
 
