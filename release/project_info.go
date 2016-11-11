@@ -16,10 +16,8 @@ package release
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/pulcy/pulsar/settings"
 )
@@ -60,7 +58,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	}
 	if oldVersion == "" {
 		// Read version from VERSION file
-		oldVersion, err = readVersion()
+		oldVersion, err = settings.ReadVersion()
 		if err != nil {
 			return nil, maskAny(err)
 		}
@@ -148,17 +146,4 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	}
 
 	return result, nil
-}
-
-// Try to read VERSION
-func readVersion() (string, error) {
-	if data, err := ioutil.ReadFile(versionFile); err != nil {
-		if os.IsNotExist(err) {
-			return "", nil
-		} else {
-			return "", maskAny(err)
-		}
-	} else {
-		return strings.TrimSpace(string(data)), nil
-	}
 }

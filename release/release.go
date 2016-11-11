@@ -29,12 +29,12 @@ import (
 
 	"github.com/pulcy/pulsar/docker"
 	"github.com/pulcy/pulsar/git"
+	"github.com/pulcy/pulsar/settings"
 	"github.com/pulcy/pulsar/util"
 )
 
 const (
 	packageJsonFile   = "package.json"
-	versionFile       = "VERSION"
 	nameKey           = "name"
 	versionKey        = "version"
 	makefileFile      = "Makefile"
@@ -262,11 +262,11 @@ func writeVersion(log *log.Logger, version string, manifests []Manifest, gradleC
 		}
 		files = append(files, mf.Path)
 	}
-	if _, err := os.Stat(versionFile); err == nil {
-		if err := ioutil.WriteFile(versionFile, []byte(version), defaultPerm); err != nil {
+	if _, err := os.Stat(settings.VersionFile); err == nil {
+		if err := ioutil.WriteFile(settings.VersionFile, []byte(version), defaultPerm); err != nil {
 			return maskAny(err)
 		}
-		files = append(files, versionFile)
+		files = append(files, settings.VersionFile)
 	}
 	if gradleConfigFile != "" {
 		if err := createGradleVersionFile(gradleConfigFile, version); err != nil {

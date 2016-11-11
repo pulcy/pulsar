@@ -222,14 +222,15 @@ func GetLatestRemoteTag(log *log.Logger, repoUrl string) (string, error) {
 }
 
 // Gets the latest commit hash from the given local git folder.
-func GetLatestLocalCommit(log *log.Logger, folder, branch string) (string, error) {
+func GetLatestLocalCommit(log *log.Logger, folder, branch string, short bool) (string, error) {
 	if branch == "" {
 		branch = "HEAD"
 	}
-	args := []string{
-		"rev-parse",
-		branch,
+	args := []string{"rev-parse"}
+	if short {
+		args = append(args, "--short")
 	}
+	args = append(args, branch)
 	output, err := util.Exec(log, cmdName, args...)
 	if err != nil {
 		return "", maskAny(err)

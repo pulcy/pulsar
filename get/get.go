@@ -90,7 +90,7 @@ func Get(log *log.Logger, flags *Flags) error {
 	if flags.Version == "" {
 		// Get latest version
 		if !cloned {
-			localCommit, err := git.GetLatestLocalCommit(nil, flags.Folder, defaultGetBranch)
+			localCommit, err := git.GetLatestLocalCommit(nil, flags.Folder, defaultGetBranch, false)
 			if err != nil {
 				return maskAny(err)
 			}
