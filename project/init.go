@@ -26,15 +26,21 @@ import (
 )
 
 const (
+	ProjectTypeGo = "go"
+
 	gitDirPath    = ".git"
 	gitIgnorePath = ".gitignore"
+	envrcPath     = ".envrc"
 
 	initialGitIgnore = `.gobuild
 .DS_Store`
+	initialEnvrc = `export GOPATH=$(pwd)/.gobuild
+PATH_add $GOPATH/bind`
 )
 
 type InitializeFlags struct {
-	ProjectDir string
+	ProjectDir  string
+	ProjectType string
 }
 
 func Initialize(log *log.Logger, flags InitializeFlags) error {
@@ -59,7 +65,11 @@ func Initialize(log *log.Logger, flags InitializeFlags) error {
 		return maskAny(err)
 	}
 	// Ensure Makefile exists
-	if err := initMakefile(log, flags.ProjectDir); err != nil {
+	if err := initMakefile(log, flags.ProjectDir, flags.ProjectType); err != nil {
+		return maskAny(err)
+	}
+	// Ensure .envrc exists
+	if err := initEnvrc(log, flags.ProjectDir, flags.ProjectType); err != nil {
 		return maskAny(err)
 	}
 	return nil
@@ -116,6 +126,27 @@ func initGitIgnore(log *log.Logger, projectDir string) error {
 		return maskAny(fmt.Errorf("%s must be a file", path))
 	} else {
 		log.Debugf("%s already initialized in %s", gitIgnorePath, projectDir)
+		return nil
+	}
+}
+
+func initEnvrc(log *log.Logger, projectDir, projectType string) error {
+	if projectType != ProjectTypeGo {
+		return nil
+	}
+	path := filepath.Join(projectDir, envrcPath)
+	if info, err := os.Stat(path); os.IsNotExist(err) {
+		log.Infof("Creating %s", gitIgnorePath)
+		if err := ioutil.WriteFile(path, []byte(initialEnvrc), 0644); err != nil {
+			return maskAny(err)
+		}
+		return nil
+	} else if err != nil {
+		return maskAny(err)
+	} else if info.IsDir() {
+		return maskAny(fmt.Errorf("%s must be a file", path))
+	} else {
+		log.Debugf("%s already initialized in %s", envrcPath, projectDir)
 		return nil
 	}
 }

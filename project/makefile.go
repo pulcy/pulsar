@@ -99,7 +99,10 @@ $(BIN): $(GOBUILDDIR) $(SOURCES)
 `
 )
 
-func initMakefile(log *log.Logger, projectDir string) error {
+func initMakefile(log *log.Logger, projectDir, projectType string) error {
+	if projectType != ProjectTypeGo {
+		return nil
+	}
 	path := filepath.Join(projectDir, makefilePath)
 	if info, err := os.Stat(path); os.IsNotExist(err) {
 		log.Infof("Creating %s", makefilePath)

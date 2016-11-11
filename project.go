@@ -25,8 +25,9 @@ import (
 )
 
 var (
-	projectDir string
-	projectCmd = &cobra.Command{
+	projectDir  string
+	projectType string
+	projectCmd  = &cobra.Command{
 		Use:   "project",
 		Short: "Project helpers",
 		Run:   UsageFunc,
@@ -70,6 +71,7 @@ var (
 
 func init() {
 	projectCmd.PersistentFlags().StringVarP(&projectDir, "dir", "d", ".", "Project directory")
+	projectInitCmd.Flags().StringVar(&projectType, "type", project.ProjectTypeGo, "Project type")
 
 	mainCmd.AddCommand(projectCmd)
 	projectCmd.AddCommand(projectCommitCmd)
@@ -123,7 +125,10 @@ func runProjectVersion(cmd *cobra.Command, args []string) {
 }
 
 func runProjectInit(cmd *cobra.Command, args []string) {
-	err := project.Initialize(log, project.InitializeFlags{ProjectDir: projectDir})
+	err := project.Initialize(log, project.InitializeFlags{
+		ProjectDir:  projectDir,
+		ProjectType: projectType,
+	})
 	if err != nil {
 		Quitf("%s\n", err)
 	}
