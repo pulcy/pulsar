@@ -87,5 +87,10 @@ func createGithubRelease(log *log.Logger, version string, info ProjectInfo) erro
 		}
 	}
 
+	// Update tags
+	if err := git.FetchTags(log, "origin"); err != nil {
+		return maskAny(err)
+	}
+
 	return nil
 }
