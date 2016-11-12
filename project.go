@@ -62,6 +62,16 @@ var (
 		Short: "Output project organization name (e.g. 'pulcy')",
 		Run:   runProjectOrganizationName,
 	}
+	projectSiblingCmd = &cobra.Command{
+		Use:   "sibling",
+		Short: "Project sibling helpers",
+		Run:   UsageFunc,
+	}
+	projectSiblingURLCmd = &cobra.Command{
+		Use:   "url",
+		Short: "Output clone URL of a sibling of the project (e.g. 'git@github.com:pulcy/sibling.git')",
+		Run:   runProjectSiblingURL,
+	}
 	projectVersionCmd = &cobra.Command{
 		Use:   "version",
 		Short: "Output project version",
@@ -78,10 +88,13 @@ func init() {
 	projectCmd.AddCommand(projectInitCmd)
 	projectCmd.AddCommand(projectNameCmd)
 	projectCmd.AddCommand(projectOrganizationCmd)
+	projectCmd.AddCommand(projectSiblingCmd)
 	projectCmd.AddCommand(projectVersionCmd)
 
 	projectOrganizationCmd.AddCommand(projectOrganizationPathCmd)
 	projectOrganizationCmd.AddCommand(projectOrganizationNameCmd)
+
+	projectSiblingCmd.AddCommand(projectSiblingURLCmd)
 }
 
 func runProjectCommit(cmd *cobra.Command, args []string) {
@@ -114,6 +127,17 @@ func runProjectOrganizationPath(cmd *cobra.Command, args []string) {
 		Quitf("%s\n", err)
 	}
 	fmt.Println(name)
+}
+
+func runProjectSiblingURL(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		Quitf("sibling-name required\n")
+	}
+	url, err := settings.GetProjectSiblingURL(nil, projectDir, args[0])
+	if err != nil {
+		Quitf("%s\n", err)
+	}
+	fmt.Println(url)
 }
 
 func runProjectVersion(cmd *cobra.Command, args []string) {
