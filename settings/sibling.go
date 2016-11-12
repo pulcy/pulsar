@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	logging "github.com/op/go-logging"
-	vcsurl "github.com/sourcegraph/go-vcsurl"
 
 	"github.com/pulcy/pulsar/git"
 	"github.com/pulcy/pulsar/util"
@@ -30,11 +29,14 @@ func GetProjectSiblingURL(log *logging.Logger, projectDir, siblingName string) (
 	var siblingURL string
 	if err := util.ExecuteInDir(projectDir, func() error {
 		if url, err := git.GetRemoteOriginUrl(log); err == nil {
-			if info, err := vcsurl.Parse(url); err != nil {
+			if info, err := util.ParseVCSURL(url); err != nil {
 				return maskAny(err)
 			} else {
 				siblingFullName := path.Join(path.Dir(info.FullName), siblingName)
 				siblingURL = strings.Replace(url, info.FullName, siblingFullName, 1)
+				// fmt.Printf("url=%s\n", url)
+				// fmt.Printf("siblingFullName=%s\n", siblingFullName)
+				// fmt.Printf("info.FullName=%s\n", info.FullName)
 			}
 		}
 		return nil

@@ -18,7 +18,6 @@ import (
 	"path"
 
 	logging "github.com/op/go-logging"
-	vcsurl "github.com/sourcegraph/go-vcsurl"
 
 	"github.com/pulcy/pulsar/git"
 	"github.com/pulcy/pulsar/util"
@@ -29,7 +28,7 @@ func GetProjectOrganizationName(log *logging.Logger, projectDir string) (string,
 	var name string
 	if err := util.ExecuteInDir(projectDir, func() error {
 		if url, err := git.GetRemoteOriginUrl(log); err == nil {
-			if info, err := vcsurl.Parse(url); err != nil {
+			if info, err := util.ParseVCSURL(url); err != nil {
 				return maskAny(err)
 			} else {
 				name = path.Dir(info.FullName)
@@ -47,7 +46,7 @@ func GetProjectOrganizationPath(log *logging.Logger, projectDir string) (string,
 	var fullname string
 	if err := util.ExecuteInDir(projectDir, func() error {
 		if url, err := git.GetRemoteOriginUrl(log); err == nil {
-			if info, err := vcsurl.Parse(url); err != nil {
+			if info, err := util.ParseVCSURL(url); err != nil {
 				return maskAny(err)
 			} else {
 				fullname = path.Join(string(info.RepoHost), info.FullName)

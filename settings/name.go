@@ -19,7 +19,6 @@ import (
 	"path/filepath"
 
 	logging "github.com/op/go-logging"
-	vcsurl "github.com/sourcegraph/go-vcsurl"
 
 	"github.com/pulcy/pulsar/git"
 	"github.com/pulcy/pulsar/util"
@@ -30,7 +29,7 @@ func GetProjectName(log *logging.Logger, projectDir string) (string, error) {
 	var name string
 	if err := util.ExecuteInDir(projectDir, func() error {
 		if url, err := git.GetRemoteOriginUrl(log); err == nil {
-			if info, err := vcsurl.Parse(url); err != nil {
+			if info, err := util.ParseVCSURL(url); err != nil {
 				return maskAny(err)
 			} else {
 				name = info.Name
