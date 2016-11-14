@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,19 +15,34 @@ const (
 )
 
 var (
-	cmdVersion = &cobra.Command{
+	versionQuiet bool
+	cmdVersion   = &cobra.Command{
 		Use: "version",
 		Run: showVersion,
+	}
+	cmdVersionBuild = &cobra.Command{
+		Use: "build",
+		Run: showVersionBuild,
 	}
 )
 
 func init() {
+	cmdVersion.Flags().BoolVarP(&versionQuiet, "quiet", "q", false, "If set, print only the version identifier")
 	mainCmd.AddCommand(cmdVersion)
+	cmdVersion.AddCommand(cmdVersionBuild)
 }
 
 func showVersion(cmd *cobra.Command, args []string) {
-	for _, line := range strings.Split(hdr, "\n") {
-		log.Info(line)
+	if versionQuiet {
+		fmt.Printf("%s-%s\n", projectVersion, projectBuild)
+	} else {
+		for _, line := range strings.Split(hdr, "\n") {
+			log.Info(line)
+		}
+		log.Info("%s %s, build %s\n", mainCmd.Use, projectVersion, projectBuild)
 	}
-	log.Info("%s %s, build %s\n", mainCmd.Use, projectVersion, projectBuild)
+}
+
+func showVersionBuild(cmd *cobra.Command, args []string) {
+	fmt.Printf("%s\n", projectBuild)
 }

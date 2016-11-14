@@ -19,20 +19,35 @@ import (
 )
 
 var (
-	completionCmd = &cobra.Command{
+	commandListCmd = &cobra.Command{
 		Use:   "command-list",
 		Short: "Gets all commands",
-		Run:   runCompletion,
+		Run:   runCommandListCmd,
+	}
+	completionCmd = &cobra.Command{
+		Use:   "completion",
+		Short: "Generate a bash completion script",
+		Run:   runCompletionCmd,
 	}
 )
 
 func init() {
+	mainCmd.AddCommand(commandListCmd)
 	mainCmd.AddCommand(completionCmd)
 }
 
-func runCompletion(cmd *cobra.Command, args []string) {
+func runCommandListCmd(cmd *cobra.Command, args []string) {
 	for _, c := range mainCmd.Commands() {
 		Printf("%s ", c.Name())
 	}
 	Printf("\n")
+}
+
+func runCompletionCmd(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		Quitf("Provide a filename argument\n")
+	}
+	if err := mainCmd.GenBashCompletionFile(args[0]); err != nil {
+		Quitf("Failed to generate BASH completion script: %#v\n", err)
+	}
 }
