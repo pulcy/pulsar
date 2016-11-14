@@ -52,6 +52,8 @@ func Initialize(log *log.Logger, flags InitializeFlags) error {
 	if err != nil {
 		return maskAny(err)
 	}
+	// Ensure directory exists
+	os.MkdirAll(flags.ProjectDir, 0755)
 	// Ensure git is initialized
 	if err := initGit(log, flags.ProjectDir); err != nil {
 		return maskAny(err)
@@ -78,20 +80,24 @@ func Initialize(log *log.Logger, flags InitializeFlags) error {
 func initGit(log *log.Logger, projectDir string) error {
 	path := filepath.Join(projectDir, gitDirPath)
 	if info, err := os.Stat(path); os.IsNotExist(err) {
-		output, err := util.Exec(log, "git", "init")
-		if err != nil {
-			log.Error(output)
+		if err := util.ExecuteInDir(projectDir, func() error {
+			output, err := util.Exec(log, "git", "init")
+			if err != nil {
+				log.Error(output)
+				return maskAny(err)
+			}
+			return nil
+		}); err != nil {
 			return maskAny(err)
 		}
-		return nil
 	} else if err != nil {
 		return maskAny(err)
 	} else if !info.IsDir() {
 		return maskAny(fmt.Errorf("%s must be a directory", path))
 	} else {
 		log.Debugf("Git already initialized in %s", projectDir)
-		return nil
 	}
+	return nil
 }
 
 func initVersion(log *log.Logger, projectDir string) error {

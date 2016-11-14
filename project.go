@@ -97,7 +97,23 @@ func init() {
 	projectSiblingCmd.AddCommand(projectSiblingURLCmd)
 }
 
+func initProjectDir(args []string) {
+	switch len(args) {
+	case 0:
+	// Do nothing
+	case 1:
+		if !projectCmd.PersistentFlags().Changed("dir") {
+			projectDir = args[0]
+		} else {
+			Quitf("Cannot set --dir and provide an argument\n")
+		}
+	default:
+		Quitf("Too many arguments\n")
+	}
+}
+
 func runProjectCommit(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	commit, err := git.GetLatestLocalCommit(nil, projectDir, "", true)
 	if err != nil {
 		Quitf("%s\n", err)
@@ -106,6 +122,7 @@ func runProjectCommit(cmd *cobra.Command, args []string) {
 }
 
 func runProjectName(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	name, err := settings.GetProjectName(nil, projectDir)
 	if err != nil {
 		Quitf("%s\n", err)
@@ -114,6 +131,7 @@ func runProjectName(cmd *cobra.Command, args []string) {
 }
 
 func runProjectOrganizationName(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	name, err := settings.GetProjectOrganizationName(nil, projectDir)
 	if err != nil {
 		Quitf("%s\n", err)
@@ -122,6 +140,7 @@ func runProjectOrganizationName(cmd *cobra.Command, args []string) {
 }
 
 func runProjectOrganizationPath(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	name, err := settings.GetProjectOrganizationPath(nil, projectDir)
 	if err != nil {
 		Quitf("%s\n", err)
@@ -141,6 +160,7 @@ func runProjectSiblingURL(cmd *cobra.Command, args []string) {
 }
 
 func runProjectVersion(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	version, err := settings.ReadVersion(projectDir)
 	if err != nil {
 		Quitf("%s\n", err)
@@ -149,6 +169,7 @@ func runProjectVersion(cmd *cobra.Command, args []string) {
 }
 
 func runProjectInit(cmd *cobra.Command, args []string) {
+	initProjectDir(args)
 	err := project.Initialize(log, project.InitializeFlags{
 		ProjectDir:  projectDir,
 		ProjectType: projectType,
