@@ -28,6 +28,7 @@ import (
 type FlattenFlags struct {
 	VendorDir string
 	TargetDir string // Defaults to $GOPATH/src
+	NoRemove  bool
 }
 
 // Flatten copies all directories found in the given vendor directory to the GOPATH
@@ -50,7 +51,7 @@ func Flatten(log *log.Logger, flags *FlattenFlags) error {
 			return maskAny(err)
 		}
 	}
-	if err := flattenGoDir(log, targetDir, targetDir); err != nil {
+	if err := flattenGoDir(log, targetDir, targetDir, flags.NoRemove); err != nil {
 		return maskAny(err)
 	}
 
@@ -92,8 +93,8 @@ func copyFromVendor(log *log.Logger, goDir, vendorDir, verb string) error {
 	return nil
 }
 
-func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
-	vendorDir, err := getVendorDir(curDir)
+func flattenGoDir(log *log.Logger, goSrcDir, curDir string, noRemove bool) error {
+	vendorDir, err := GetVendorDir(curDir)
 	if err != nil {
 		return maskAny(err)
 	}
@@ -101,8 +102,10 @@ func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
 		if err := copyFromVendor(log, goSrcDir, vendorDir, "Flattening"); err != nil {
 			return maskAny(err)
 		}
-		if err := os.RemoveAll(vendorDir); err != nil {
-			return maskAny(err)
+		if !noRemove {
+			if err := os.RemoveAll(vendorDir); err != nil {
+				return maskAny(err)
+			}
 		}
 	}
 
@@ -116,7 +119,7 @@ func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
 		if !entry.IsDir() {
 			continue
 		}
-		if err := flattenGoDir(log, goSrcDir, filepath.Join(curDir, entry.Name())); err != nil {
+		if err := flattenGoDir(log, goSrcDir, filepath.Join(curDir, entry.Name()), noRemove); err != nil {
 			return maskAny(err)
 		}
 	}
@@ -124,7 +127,7 @@ func flattenGoDir(log *log.Logger, goSrcDir, curDir string) error {
 	return nil
 }
 
-func getVendorDir(dir string) (string, error) {
+func GetVendorDir(dir string) (string, error) {
 	settings, err := settings.Read(dir)
 	if err != nil {
 		return "", maskAny(err)

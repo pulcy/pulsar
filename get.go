@@ -32,6 +32,7 @@ var (
 
 func init() {
 	getCmd.Flags().StringVarP(&getFlags.Version, "version", "b", "", "Specify checkout version")
+	getCmd.Flags().BoolVarP(&getFlags.AllowLink, "link", "l", false, "Allow linking to local sibling")
 	mainCmd.AddCommand(getCmd)
 }
 

@@ -24,6 +24,7 @@ import (
 
 	"github.com/pulcy/pulsar/cache"
 	"github.com/pulcy/pulsar/git"
+	"github.com/pulcy/pulsar/golang"
 	"github.com/pulcy/pulsar/util"
 )
 
@@ -39,9 +40,10 @@ var (
 )
 
 type Flags struct {
-	Folder  string
-	RepoUrl string
-	Version string
+	Folder    string
+	RepoUrl   string
+	Version   string
+	AllowLink bool
 }
 
 // Get ensures that flags.Folder contains an up to date copy of flags.RepoUrl checked out to flags.Version.
@@ -60,6 +62,47 @@ func Get(log *log.Logger, flags *Flags) error {
 
 	// Get current folder
 	wd, _ := os.Getwd()
+
+	linked := false
+	if flags.AllowLink {
+		if info, err := util.ParseVCSURL(flags.RepoUrl); err == nil {
+			siblingPath := filepath.Join(filepath.Dir(wd), info.Name)
+			if _, err := os.Stat(siblingPath); err == nil {
+				//log.Infof("Sibling folder %s exists", siblingPath)
+				util.ExecuteInDir(siblingPath, func() error {
+					remote, err := git.GetRemoteOriginUrl(nil)
+					if err != nil {
+						return maskAny(err)
+					}
+					if remote == flags.RepoUrl {
+						if relPath, err := filepath.Rel(filepath.Dir(flags.Folder), siblingPath); err == nil {
+							if err := os.Symlink(relPath, flags.Folder); err == nil {
+								log.Infof("Linked -> %s", siblingPath)
+								linked = true
+
+								if vendorDir, err := golang.GetVendorDir(siblingPath); err != nil {
+									return maskAny(err)
+								} else {
+									// Flatten sibling in copy-only mode
+									if err := golang.Flatten(log, &golang.FlattenFlags{
+										VendorDir: vendorDir,
+										NoRemove:  true,
+									}); err != nil {
+										return maskAny(err)
+									}
+								}
+
+							}
+						}
+					}
+					return nil
+				})
+			}
+		}
+	}
+	if linked {
+		return nil
+	}
 
 	// Fill cache if needed
 	cloned := false
