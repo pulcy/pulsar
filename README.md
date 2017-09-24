@@ -49,6 +49,23 @@ The result is fetched into `$GOPATH/src`.
 pulsar go get <repository-url>
 ```
 
+### Create local GOPATH for any go repository
+
+Use the following command to create a local `GOPATH` structure for any local repository.
+It creates a local `.gobuild/src/github.com/yourname/yourrepo` folder structure where the deepest folder
+links back (via aa softlink) to the repository itself.
+It then prints out the proper value for the `GOPATH` environment variable.
+
+```
+pulsar go path [-p alternative-package-name]
+```
+
+Typical use:
+
+```
+export GOPATH=$(pulsar go path)
+```
+
 ### Vendor go libraries 
 
 Use the following command to copy (vendor) one or more go libraries into a vendor folder.

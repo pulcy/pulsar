@@ -34,6 +34,11 @@ var (
 		Short: "Execute `go get` with cache support",
 		Run:   runGoGet,
 	}
+	goPathCmd = &cobra.Command{
+		Use:   "path",
+		Short: "Create a local GOPATH for the repository in the current directory",
+		Run:   runGoPath,
+	}
 	goVendorCmd = &cobra.Command{
 		Use:   "vendor",
 		Short: "Update a package in the vendor directory",
@@ -48,14 +53,17 @@ var (
 
 	vendorDir     string
 	vendorFlatten bool
+	goPathPkg     string
 )
 
 func init() {
 	goCmd.PersistentFlags().StringVarP(&vendorDir, "vendor-dir", "V", golang.DefaultVendorDir, "Specify vendor directory")
+	goPathCmd.Flags().StringVarP(&goPathPkg, "package", "p", "", "If set, use this package instead of the origin URL from the local repo")
 	goVendorCmd.Flags().BoolVarP(&vendorFlatten, "flatten", "F", false, "If set, flattens all directories in the vendor directory")
 
 	mainCmd.AddCommand(goCmd)
 	goCmd.AddCommand(goGetCmd)
+	goCmd.AddCommand(goPathCmd)
 	goCmd.AddCommand(goVendorCmd)
 	goCmd.AddCommand(goFlattenCmd)
 }
@@ -84,6 +92,20 @@ func runGoGet(cmd *cobra.Command, args []string) {
 			failed = true
 		}
 		if failed {
+			os.Exit(1)
+		}
+	}
+}
+
+func runGoPath(cmd *cobra.Command, args []string) {
+	if len(args) != 0 {
+		CommandError(cmd, "Expected no arguments\n")
+	} else {
+		flags := &golang.GoPathFlags{
+			Package: goPathPkg,
+		}
+		if err := golang.CreateLocalGoPath(log, flags); err != nil {
+			Printf("creating GOPATH failed: %#v\n", err)
 			os.Exit(1)
 		}
 	}
