@@ -51,11 +51,16 @@ func CreateLocalGoPath(log *log.Logger, flags *GoPathFlags) error {
 	gobuildDir := filepath.Join(curDir, ".gobuild")
 	orgDir := filepath.Join(gobuildDir, "src", string(gitURL.RepoHost), gitURL.Username)
 	repoDir := filepath.Join(orgDir, gitURL.Name)
+	relRepoDir, err := filepath.Rel(orgDir, curDir)
+	targetDir := curDir
+	if err == nil {
+		targetDir = relRepoDir
+	}
 	if _, err := os.Stat(repoDir); err != nil {
 		if err := os.MkdirAll(orgDir, 0755); err != nil {
 			return maskAny(err)
 		}
-		if err := os.Symlink(curDir, repoDir); err != nil {
+		if err := os.Symlink(targetDir, repoDir); err != nil {
 			return maskAny(err)
 		}
 	}
