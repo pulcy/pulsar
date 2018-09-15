@@ -5,7 +5,7 @@ various `pulsar` command work.
 
 This file is JSON formatted with the following structure:
 
-```json
+```jsonc
 {
     // The name of the docker image build for this project.
     // Defaults to project name.
