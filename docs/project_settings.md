@@ -41,6 +41,13 @@ This file is JSON formatted with the following structure:
             "path": "<relative-path-of-asset-file>",
             "label": "<optional-label-of-file>"
         }
+    ],
+    // If set, builds are created for all of these platforms.
+    "platforms": [
+        {
+            "os": "<GOOS-compatible-operating-system-name>",
+            "arch": "<GOARCH-compatible-architecture-name>"
+        }
     ]
 }
 ```

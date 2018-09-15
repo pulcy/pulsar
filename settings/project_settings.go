@@ -40,10 +40,11 @@ type ProjectSettings struct {
 		CleanTarget   string `json:"clean,omitempty"`
 		ReleaseTarget string `json:"release,omitempty"`
 	} `json:"targets"`
-	ManifestFiles    []string      `json:"manifest-files"`     // Additional manifest files
-	GoVendorDir      string        `json:"go-vendor-dir"`      // If set, use this instead of `./vendor` as vendor directory.
-	GradleConfigFile string        `json:"gradle-config-file"` // If set, creates a file with this path containing the current version
-	GithubAssets     []GithubAsset `json:"github-assets"`      // If set, creates a github release with given assets.
+	ManifestFiles    []string      `json:"manifest-files"`      // Additional manifest files
+	GoVendorDir      string        `json:"go-vendor-dir"`       // If set, use this instead of `./vendor` as vendor directory.
+	GradleConfigFile string        `json:"gradle-config-file"`  // If set, creates a file with this path containing the current version
+	GithubAssets     []GithubAsset `json:"github-assets"`       // If set, creates a github release with given assets.
+	Platforms        []Platform    `json:"platforms,omitempty"` // If set, builds are created for all of these platforms.
 }
 
 type GithubAsset struct {

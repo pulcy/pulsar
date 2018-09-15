@@ -40,8 +40,10 @@ type ProjectInfo struct {
 		ReleaseTarget string
 	}
 	GithubAssets []settings.GithubAsset // If set, creates a github release with given assets.
+	Platforms    []settings.Platform    // If set, builds are created for all of these platforms.
 }
 
+// GetProjectInfo collects release related project information for the current project.
 func GetProjectInfo() (*ProjectInfo, error) {
 	// Read the current version and name
 	project := ""
@@ -86,6 +88,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 	gradleConfigFile := ""
 	gitBranch := "master"
 	var githubAssets []settings.GithubAsset
+	var platforms []settings.Platform
 	settings, err := settings.Read(".")
 	if err != nil {
 		return nil, maskAny(err)
@@ -109,6 +112,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 			gitBranch = settings.GitBranch
 		}
 		githubAssets = settings.GithubAssets
+		platforms = settings.Platforms
 
 		for _, path := range settings.ManifestFiles {
 			mf, err := tryReadManifest(path)
@@ -135,6 +139,7 @@ func GetProjectInfo() (*ProjectInfo, error) {
 		Manifests:        manifests,
 		GradleConfigFile: gradleConfigFile,
 		GithubAssets:     githubAssets,
+		Platforms:        platforms,
 	}
 	result.Targets.CleanTarget = "clean"
 	if settings != nil && settings.Targets.CleanTarget != "" {

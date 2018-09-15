@@ -23,21 +23,21 @@ import (
 )
 
 // Push a docker image to the arvika-ssh registry
-func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) error {
+func Push(log *log.Logger, image, dockerRegistry, dockerNamespace string) (string, error) {
 	localTag := path.Join(dockerNamespace, image)
 	registryTag := path.Join(dockerRegistry, dockerNamespace, image)
 	if err := util.ExecPrintError(log, "docker", "tag", localTag, registryTag); err != nil {
-		return err
+		return "", err
 	}
 	// Push
 	if err := util.ExecPrintError(log, "docker", "push", registryTag); err != nil {
-		return err
+		return "", err
 	}
 	// Remove registry tag
 	if err := util.ExecPrintError(log, "docker", "rmi", registryTag); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return registryTag, nil
 }
 
 // Pull a docker image from the arvika-ssh registry

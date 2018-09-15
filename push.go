@@ -42,7 +42,7 @@ func runPush(cmd *cobra.Command, args []string) {
 	case 0:
 		CommandError(cmd, "Too few arguments\n")
 	case 1:
-		err := docker.Push(log, args[0], pushDockerRegistry, pushDockerNamespace)
+		_, err := docker.Push(log, args[0], pushDockerRegistry, pushDockerNamespace)
 		if err != nil {
 			Quitf("%s\n", err)
 		}

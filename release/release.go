@@ -157,8 +157,60 @@ func Release(log *log.Logger, flags *Flags) error {
 		buildLatestTag := path.Join(info.Namespace, imageAndLatest)
 		buildMajorVersionTag := path.Join(info.Namespace, imageAndMajorVersion)
 		buildMinorVersionTag := path.Join(info.Namespace, imageAndMinorVersion)
-		if err := util.ExecPrintError(log, "docker", "build", "--tag", buildTag, "."); err != nil {
-			return maskAny(err)
+		platforms := info.Platforms
+		registry := flags.DockerRegistry
+		if info.Registry != "" {
+			registry = info.Registry
+		}
+		namespace := info.Namespace
+
+		if len(platforms) > 0 {
+			// Build dockerfile per platform
+			var platformBuildTags []string
+			for _, p := range platforms {
+				platformBuildTag := fmt.Sprintf("%s-%s-%s", buildTag, p.OS, p.Arch)
+				if err := util.ExecPrintError(log, "docker", "build", "--build-arg=GOOS="+p.OS, "--build-arg=GOARCH="+p.Arch, "--tag", platformBuildTag, "."); err != nil {
+					return maskAny(err)
+				}
+				platformBuildTags = append(platformBuildTags, platformBuildTag)
+			}
+			// Push image per platform
+			if registry != "" || namespace != "" {
+				var platformRegistryTags []string
+				for _, platformBuildTag := range platformBuildTags {
+					platformRegistryTag, err := docker.Push(log, platformBuildTag, registry, namespace)
+					if err != nil {
+						return maskAny(err)
+					}
+					platformRegistryTags = append(platformRegistryTags, platformRegistryTag)
+				}
+				// Create multi-arch manifest
+				manifestTag := path.Join(registry, namespace, imageAndVersion)
+				if err := util.ExecPrintError(log, "docker", append([]string{"manifest", "create", "--amend", manifestTag}, platformRegistryTags...)...); err != nil {
+					return maskAny(err)
+				}
+				// Annotate manifest per platform
+				for i, p := range platforms {
+					if err := util.ExecPrintError(log, "docker", "manifest", "annotate", manifestTag, platformRegistryTags[i], "--os="+p.OS, "--arch="+p.Arch); err != nil {
+						return maskAny(err)
+					}
+				}
+				// Push multi-arch manifest
+				if err := util.ExecPrintError(log, "docker", "manifest", "push", manifestTag); err != nil {
+					return maskAny(err)
+				}
+				if err := util.ExecPrintError(log, "docker", "pull", manifestTag); err != nil {
+					return maskAny(err)
+				}
+				if err := util.ExecPrintError(log, "docker", "tag", manifestTag, buildTag); err != nil {
+					return maskAny(err)
+				}
+			}
+		} else {
+			// Build generic docker image
+			if err := util.ExecPrintError(log, "docker", "build", "--tag", buildTag, "."); err != nil {
+				return maskAny(err)
+			}
 		}
 		if info.TagLatest {
 			util.ExecSilent(log, "docker", "rmi", buildLatestTag)
@@ -178,31 +230,26 @@ func Release(log *log.Logger, flags *Flags) error {
 				return maskAny(err)
 			}
 		}
-		registry := flags.DockerRegistry
-		if info.Registry != "" {
-			registry = info.Registry
-		}
-		namespace := info.Namespace
 		if registry != "" || namespace != "" {
 			// Push image to registry
-			if err := docker.Push(log, imageAndVersion, registry, namespace); err != nil {
+			if _, err := docker.Push(log, imageAndVersion, registry, namespace); err != nil {
 				return maskAny(err)
 			}
 			if info.TagLatest {
 				// Push latest image to registry
-				if err := docker.Push(log, imageAndLatest, registry, namespace); err != nil {
+				if _, err := docker.Push(log, imageAndLatest, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}
 			if info.TagMajorVersion && !isDev {
 				// Push major version image to registry
-				if err := docker.Push(log, imageAndMajorVersion, registry, namespace); err != nil {
+				if _, err := docker.Push(log, imageAndMajorVersion, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}
 			if info.TagMinorVersion && !isDev {
 				// Push minor version image to registry
-				if err := docker.Push(log, imageAndMinorVersion, registry, namespace); err != nil {
+				if _, err := docker.Push(log, imageAndMinorVersion, registry, namespace); err != nil {
 					return maskAny(err)
 				}
 			}
