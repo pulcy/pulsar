@@ -216,7 +216,7 @@ func Release(log *log.Logger, flags *Flags) error {
 		}
 
 		// Tag version
-		if err := git.Tag(log, version.String()); err != nil {
+		if err := git.Tag(log, "v"+ version.String()); err != nil {
 			return maskAny(err)
 		}
 
