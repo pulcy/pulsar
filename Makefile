@@ -5,7 +5,7 @@ COMMIT := $(shell git rev-parse --short HEAD)
 
 GOBUILDDIR := $(SCRIPTDIR)/.gobuild
 SRCDIR := $(SCRIPTDIR)
-BINDIR := $(SCRIPTDIR)
+BINDIR := $(SCRIPTDIR)/bin
 VENDORDIR = $(SCRIPTDIR)/vendor
 
 ORGPATH := github.com/pulcy
@@ -14,9 +14,6 @@ REPONAME := $(PROJECT)
 REPODIR := $(ORGDIR)/$(REPONAME)
 REPOPATH := $(ORGPATH)/$(REPONAME)
 BIN := $(BINDIR)/$(PROJECT)
-
-GOPATH := $(GOBUILDDIR)
-GOVERSION := 1.22.0-alpine
 
 SOURCES := $(shell find $(SRCDIR) -name '*.go')
 
@@ -33,11 +30,7 @@ endif
 all: $(BIN)
 
 clean:
-	rm -Rf $(BIN) $(GOBUILDDIR) bin
-
-$(GOBUILDDIR):
-	mkdir -p $(ORGDIR)
-	rm -f $(REPODIR) && ln -s ../../../../ $(REPODIR)
+	rm -Rf $(BIN) bin
 
 update-vendor:
 	rm -Rf $(VENDORDIR)
@@ -56,17 +49,9 @@ update-vendor:
 		github.com/spf13/cobra \
 		github.com/spf13/pflag
 
-$(BIN): $(GOBUILDDIR) $(SOURCES)
-	docker run \
-	    --rm \
-	    -v $(SRCDIR):/usr/code \
-	    -e GOPATH=/usr/code/.gobuild \
-	    -e GOOS=$(GOOS) \
-	    -e GOARCH=$(GOARCH) \
-		-e CGO_ENABLED=0 \
-	    -w /usr/code/ \
-	    golang:$(GOVERSION) \
-	    go build -a -installsuffix netgo -tags netgo -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o /usr/code/$(PROJECT) $(REPOPATH)
+$(BIN): $(SOURCES)
+	mkdir -p bin
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -a -installsuffix netgo -tags netgo -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o bin/$(PROJECT) $(REPOPATH)
 
 release:
 	@${MAKE} -B GOOS=linux GOARCH=amd64 tgz
