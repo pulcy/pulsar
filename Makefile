@@ -25,42 +25,29 @@ ifndef GOARCH
 endif
 
 
-.PHONY: clean test release tgz
+.PHONY: clean binaries test release tgz
 
-all: $(BIN)
+all: binaries
 
 clean:
 	rm -Rf $(BIN) bin
 
-update-vendor:
-	rm -Rf $(VENDORDIR)
-	$(BIN) go vendor -V $(VENDORDIR) \
-		github.com/coreos/go-semver/semver \
-		github.com/cpuguy83/go-md2man \
-		github.com/ewoutp/go-gitlab-client \
-		github.com/inconshreveable/mousetrap \
-		github.com/juju/errgo \
-		github.com/mgutz/ansi \
-		github.com/mitchellh/go-homedir \
-		github.com/op/go-logging \
-		github.com/russross/blackfriday \
-		github.com/shurcooL/sanitized_anchor_name \
-		github.com/sourcegraph/go-vcsurl \ 
-		github.com/spf13/cobra \
-		github.com/spf13/pflag
-
-$(BIN): $(SOURCES)
+binaries: $(SOURCES)
 	mkdir -p bin
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -a -installsuffix netgo -tags netgo -ldflags "-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" -o bin/$(PROJECT) $(REPOPATH)
+	CGO_ENABLED=0 gox \
+		-osarch="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64" \
+		-ldflags="-X main.projectVersion=$(VERSION) -X main.projectBuild=$(COMMIT)" \
+		-output="bin/{{.OS}}/{{.Arch}}/$(PROJECT)" \
+		-tags="netgo" \
+		./...
 
-release:
-	@${MAKE} -B GOOS=linux GOARCH=amd64 tgz
-	@${MAKE} -B GOOS=darwin GOARCH=amd64 tgz
+release: tgz
 
-tgz: $(BIN)
-	mkdir -p bin
-	tar zcf bin/$(PROJECT)-$(GOOS)-$(GOARCH).tgz -C $(SCRIPTDIR) $(PROJECT)
-	rm $(BIN)
+tgz: binaries
+	tar zcf bin/$(PROJECT)-linux-amd64.tgz -C $(BINDIR)/linux/amd64 $(PROJECT)
+	tar zcf bin/$(PROJECT)-linux-arm64.tgz -C $(BINDIR)/linux/arm64 $(PROJECT)
+	tar zcf bin/$(PROJECT)-darwin-amd64.tgz -C $(BINDIR)/darwin/amd64 $(PROJECT)
+	tar zcf bin/$(PROJECT)-darwin-arm64.tgz -C $(BINDIR)/darwin/arm64 $(PROJECT)
 
 test:
 	#GOPATH=$(GOPATH) go test -v $(REPOPATH)/scheduler

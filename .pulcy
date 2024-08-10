@@ -1,10 +1,19 @@
 {
-    "github-assets": [{
-        "path": "bin/pulsar-darwin-amd64.tgz"
-    }, {
-        "path": "bin/pulsar-linux-amd64.tgz"
-    }],
-    "targets": {
-        "release": "release"
-    }
+  "github-assets": [
+    {
+      "path": "bin/pulsar-darwin-amd64.tgz"
+    },
+    {
+      "path": "bin/pulsar-darwin-arm64.tgz"
+    },
+    {
+      "path": "bin/pulsar-linux-amd64.tgz"
+    },
+    {
+        "path": "bin/pulsar-linux-arm64.tgz"
+      }
+    ],
+  "targets": {
+    "release": "release"
+  }
 }
