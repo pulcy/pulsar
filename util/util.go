@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 
 	"github.com/juju/errgo"
@@ -46,12 +47,13 @@ func PrepareCommand(log *log.Logger, cmdName string, arguments ...string) *Comma
 	}
 	c.cmd.Stdout = &c.stdout
 	c.cmd.Stderr = &c.stderr
+	c.cmd.Stdin = os.Stdin
 	return c
 }
 
 func (c *Command) Announce() {
 	if c.log != nil {
-		c.log.Debug("Running %s %v", c.cmdName, c.arguments)
+		c.log.Debugf("Running %s %v", c.cmdName, c.arguments)
 	}
 }
 
@@ -122,7 +124,7 @@ func ExecSilent(log *log.Logger, cmdName string, arguments ...string) (string, e
 // Execute a given command without waiting for its result.
 func ExecDetached(log *log.Logger, cmdName string, arguments ...string) error {
 	if log != nil {
-		log.Debug("Running %s %v", cmdName, arguments)
+		log.Debugf("Running %s %v", cmdName, arguments)
 	}
 	cmd := exec.Command(cmdName, arguments...)
 	return cmd.Start()
